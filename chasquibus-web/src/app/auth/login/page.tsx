@@ -7,9 +7,8 @@ import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Link from "next/link";
-import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid"; // Using Grid v2 (default in MUI v7)
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -17,26 +16,56 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import Alert from "@mui/material/Alert";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from "@/hooks/useAuth";
 
+// Definir el tema fuera del componente para evitar recreación innecesaria
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: "#1976d2",
     },
     background: {
-      default: '#f4f6fa',
+      default: "#f4f6fa",
     },
   },
   typography: {
-    fontFamily: 'Segoe UI, Arial, sans-serif',
+    fontFamily: "Segoe UI, Arial, sans-serif",
   },
 });
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [error, setError] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
+
+  const handleSubmit = async (
+    values: { email: string; password: string },
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+  ) => {
+    setError(null);
+    const result = await login(values.email, values.password);
+    setSubmitting(false);
+    if (result.success && result.user) {
+      switch (result.user.role) {
+        case "admin":
+          router.push("/dashboard/admin");
+          break;
+        case "office":
+          router.push("/dashboard/office");
+          break;
+        case "client":
+          router.push("/dashboard/client");
+          break;
+        case "user":
+          router.push("/dashboard/user");
+          break;
+        default:
+          router.push("/");
+      }
+    } else {
+      setError(result.error || "Credenciales inválidas. Verifica tu email y contraseña.");
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -45,30 +74,24 @@ export default function LoginPage() {
         sx={{
           minHeight: "100vh",
           background: "linear-gradient(120deg, #1976d2 0%, #43a047 100%)",
+          display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
         <CssBaseline />
         <Grid
-          item
-          xs={12}
-          sm={8}
-          md={5}
-          component={Paper}
-          elevation={10}
-          square
           sx={{
             borderRadius: 4,
             mx: 2,
-            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
             p: { xs: 2, sm: 4 },
-            background: 'rgba(255,255,255,0.95)',
-            minWidth: 350,
+            background: "rgba(255,255,255,0.95)",
+            width: { xs: "100%", sm: 420 }, // Responsive width
             maxWidth: 420,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
           <Box
@@ -77,7 +100,7 @@ export default function LoginPage() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              width: '100%',
+              width: "100%",
             }}
           >
             <Avatar sx={{ m: 1, bgcolor: "primary.main", width: 56, height: 56 }}>
@@ -86,7 +109,7 @@ export default function LoginPage() {
             <Typography component="h1" variant="h4" fontWeight={700} sx={{ mb: 2 }}>
               Iniciar sesión
             </Typography>
-            {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ width: "100%", mb: 2 }}>{error}</Alert>}
             <Formik
               initialValues={{ email: "", password: "" }}
               validationSchema={Yup.object({
@@ -95,16 +118,7 @@ export default function LoginPage() {
                   .required("Campo requerido"),
                 password: Yup.string().required("Campo requerido"),
               })}
-              onSubmit={async (values, { setSubmitting }) => {
-                setError("");
-                const ok = await login(values.email, values.password);
-                setSubmitting(false);
-                if (ok) {
-                  router.push("/dashboard/admin");
-                } else {
-                  setError("Credenciales inválidas. Solo el administrador puede iniciar sesión en esta demo.");
-                }
-              }}
+              onSubmit={handleSubmit}
             >
               {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
                 <Form style={{ width: "100%", marginTop: 1 }}>
@@ -121,7 +135,7 @@ export default function LoginPage() {
                     onBlur={handleBlur}
                     error={touched.email && Boolean(errors.email)}
                     helperText={touched.email && errors.email}
-                    sx={{ background: '#f8fafc', borderRadius: 2 }}
+                    sx={{ background: "#f8fafc", borderRadius: 2 }}
                   />
                   <TextField
                     margin="normal"
@@ -136,7 +150,7 @@ export default function LoginPage() {
                     onBlur={handleBlur}
                     error={touched.password && Boolean(errors.password)}
                     helperText={touched.password && errors.password}
-                    sx={{ background: '#f8fafc', borderRadius: 2 }}
+                    sx={{ background: "#f8fafc", borderRadius: 2 }}
                   />
                   <FormControlLabel
                     control={<Checkbox value="remember" color="primary" />}
@@ -152,14 +166,14 @@ export default function LoginPage() {
                   >
                     Iniciar sesión
                   </Button>
-                  <Grid container sx={{ mt: 1 }}>
-                    <Grid item xs={12} sm={6}>
-                      <Link href="#" style={{ fontSize: "0.95rem", color: '#1976d2', textDecoration: 'none' }}>
+                  <Grid container sx={{ mt: 1, gap: 2 }}>
+                    <Grid sx={{ flex: 1, minWidth: 0 }}>
+                      <Link href="#" style={{ fontSize: "0.95rem", color: "#1976d2", textDecoration: "none" }}>
                         ¿Olvidaste tu contraseña?
                       </Link>
                     </Grid>
-                    <Grid item xs={12} sm={6} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-                      <Link href="/auth/register" style={{ fontSize: "0.95rem", color: '#1976d2', textDecoration: 'none' }}>
+                    <Grid sx={{ flex: 1, minWidth: 0, textAlign: "right" }}>
+                      <Link href="/auth/register" style={{ fontSize: "0.95rem", color: "#1976d2", textDecoration: "none" }}>
                         {"¿No tienes cuenta? Regístrate"}
                       </Link>
                     </Grid>
@@ -172,4 +186,4 @@ export default function LoginPage() {
       </Grid>
     </ThemeProvider>
   );
-} 
+}

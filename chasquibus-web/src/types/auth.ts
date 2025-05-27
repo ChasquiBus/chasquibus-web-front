@@ -1,12 +1,14 @@
-export type UserRole = 'admin' | 'user' | 'office' | 'client';
+export type UserRole = 'user' | 'office' | 'client' | 'admin';
 
 export interface User {
-  id: string;
+  id: number; // Cambiado a number para coincidir con el backend
   email: string;
-  name: string;
-  role: UserRole;
-  createdAt: Date;
-  updatedAt: Date;
+  name: string; // Ajustado para mapear con nombre y apellido del backend
+  role: UserRole; // Mapeado desde el backend
+  createdAt: string; // Cambiado a string para coincidir con timestamp del backend
+  updatedAt: string; // Cambiado a string para coincidir con timestamp del backend
+  apellido?: string; // Opcional, para mapear con apellido del backend
+  cedula?: string; // Opcional, para mapear con cedula del backend
 }
 
 export interface AuthState {
@@ -23,4 +25,4 @@ export interface LoginCredentials {
 export interface RegisterData extends LoginCredentials {
   name: string;
   role: UserRole;
-} 
+}

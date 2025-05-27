@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/useAuth';
 
 function getInitials(name: string) {
   const names = name.trim().split(' ');
@@ -18,21 +19,22 @@ function getInitials(name: string) {
 }
 
 export default function Header() {
-  // const { auth, logout } = useAuth();
-  // const user = auth.user;
-  const user = { name: "Administrador Demo", email: "demo@chasquibus.com" };
+  const { auth, logout } = useAuth();
+  const user = auth.user;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
+
   const handleLogout = () => {
     handleClose();
-    // logout();
+    logout();
     window.location.href = '/auth/login';
   };
 
@@ -47,7 +49,7 @@ export default function Header() {
           </Typography>
         </Box>
         {/* Avatar, nombre y menú de usuario */}
-        {user && (
+        {user ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="subtitle1" color="text.primary" fontWeight={600} sx={{ mr: 1 }}>
               {user.name}
@@ -66,7 +68,9 @@ export default function Header() {
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
               <Box sx={{ px: 2, py: 1 }}>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: 13 }}>{user.email}</Typography>
+                <Typography variant="subtitle1" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: 13 }}>
+                  {user.email}
+                </Typography>
               </Box>
               <Divider />
               <MenuItem onClick={handleLogout} sx={{ color: 'error.main', fontWeight: 600 }}>
@@ -74,8 +78,12 @@ export default function Header() {
               </MenuItem>
             </Menu>
           </Box>
+        ) : (
+          <Typography variant="subtitle1" color="text.secondary">
+            No autenticado
+          </Typography>
         )}
       </Toolbar>
     </AppBar>
   );
-} 
+}
