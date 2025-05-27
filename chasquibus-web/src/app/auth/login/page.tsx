@@ -159,7 +159,7 @@ export default function LoginPage() {
                     ¿Olvidaste tu contraseña?
                   </Link>
                   <Link href="/auth/register" style={{ fontSize: "0.95rem", color: "#1976d2", textDecoration: "none" }}>
-                    ¿No tienes cuenta? Regístrate
+                    ¿No tienes cuenta? Regístrate ahora
                   </Link>
                 </Box>
               </Form>
