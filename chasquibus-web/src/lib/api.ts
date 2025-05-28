@@ -3,6 +3,7 @@ import { LoginCredentials, User, UserRole } from '@/types/auth';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const login = async (credentials: LoginCredentials): Promise<{ access_token: string; user: User }> => {
+
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: {
