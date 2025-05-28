@@ -21,12 +21,23 @@ import Box from '@mui/material/Box';
 import { useState, useEffect } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import MapIcon from '@mui/icons-material/Map';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import type { NavigationItem } from '@/constants/navigation';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Usuarios': <PeopleIcon color="primary" />,
   'Gestión de Cooperativas': <BusinessIcon color="primary" />,
   'Configuración General': <SettingsIcon color="primary" />,
   'Cerrar Sesión': <LogoutIcon color="error" />,
+  'Gestión de Buses': <DirectionsBusIcon color="primary" />,
+  'Gestión de Frecuencias': <ScheduleIcon color="primary" />,
+  'Paradas y Rutas': <MapIcon color="primary" />,
+  'Hoja de Ruta': <AssignmentIcon color="primary" />,
 };
 
 interface NavigationProps {
@@ -41,6 +52,8 @@ export default function Navigation({ role, menuOpen, setMenuOpen }: NavigationPr
   const [open, setOpen] = useState(menuOpen ?? true);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const { logout } = useAuth();
+  const router = useRouter();
 
   // Sincronizar estado local con el global si se pasa como prop
   useEffect(() => {
@@ -71,6 +84,14 @@ export default function Navigation({ role, menuOpen, setMenuOpen }: NavigationPr
       <MenuIcon />
     </IconButton>
   );
+
+  // Handler para logout si la opción es 'Cerrar Sesión'
+  const handleItemClick = async (item: NavigationItem) => {
+    if (item.label === 'Cerrar Sesión') {
+      await logout();
+      router.push('/auth/login');
+    }
+  };
 
   // Drawer permanente en desktop, Drawer desplegable en mobile
   return (
@@ -119,6 +140,7 @@ export default function Navigation({ role, menuOpen, setMenuOpen }: NavigationPr
                   justifyContent: open ? 'flex-start' : 'center',
                   px: open ? 2 : 1,
                 }}
+                onClick={() => handleItemClick(item)}
               >
                 <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 'auto', justifyContent: 'center' }}>
                   {iconMap[item.label] || null}
@@ -157,6 +179,7 @@ export default function Navigation({ role, menuOpen, setMenuOpen }: NavigationPr
                     mb: 1,
                     background: pathname === item.href ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
                   }}
+                  onClick={() => handleItemClick(item)}
                 >
                   <ListItemIcon>
                     {iconMap[item.label] || null}
