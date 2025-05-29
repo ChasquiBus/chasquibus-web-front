@@ -1,3 +1,4 @@
+// src/components/buses/BusesTable.tsx
 import React from 'react';
 import {
   Table,
@@ -43,50 +44,61 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
           </TableRow>
         </TableHead>
         <TableBody>
-          {buses.map((bus) => (
-            <TableRow key={bus.id}>
-              <TableCell>
-                <Avatar
-                  src={bus.imagen ? `${API_URL}/upload/buses/${bus.imagen}` : undefined}
-                  alt={`Bus ${bus.placa}`}
-                  sx={{ width: 50, height: 50 }}
-                >
-                  {bus.placa.charAt(0)}
-                </Avatar>
-              </TableCell>
-              <TableCell>{bus.placa}</TableCell>
-              <TableCell>{bus.numero_bus}</TableCell>
-              <TableCell>{bus.cooperativa_id}</TableCell>
-              <TableCell>{bus.chofer_id}</TableCell>
-              <TableCell>{bus.marca_chasis || '-'}</TableCell>
-              <TableCell>{bus.marca_carroceria || '-'}</TableCell>
-              <TableCell>
-                <Chip
-                  label={bus.piso_doble ? 'Piso Doble' : 'Piso Simple'}
-                  color={bus.piso_doble ? 'primary' : 'default'}
-                  size="small"
-                />
-              </TableCell>
-              <TableCell>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton
-                    size="small"
-                    onClick={() => onEdit(bus)}
-                    color="primary"
+          {buses.map((bus) => {
+            const imageUrl = bus.imagen
+              ? `${API_URL}/${bus.imagen.startsWith('upload/buses/') ? bus.imagen : `upload/buses/${bus.imagen}`}`
+              : undefined;
+            console.log(`Image URL for bus ${bus.id}: ${imageUrl}`); // Debug log
+            return (
+              <TableRow key={bus.id}>
+                <TableCell>
+                  <Avatar
+                    src={imageUrl}
+                    alt={`Bus ${bus.placa}`}
+                    sx={{ width: 50, height: 50 }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = ''; // Clear the broken image
+                      console.log(`Failed to load image: ${imageUrl}`); // Debug error
+                    }}
                   >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
+                    {bus.imagen ? null : bus.placa.charAt(0)}
+                  </Avatar>
+                </TableCell>
+                <TableCell>{bus.placa}</TableCell>
+                <TableCell>{bus.numero_bus}</TableCell>
+                <TableCell>{bus.cooperativa_id}</TableCell>
+                <TableCell>{bus.chofer_id}</TableCell>
+                <TableCell>{bus.marca_chasis || '-'}</TableCell>
+                <TableCell>{bus.marca_carroceria || '-'}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={bus.piso_doble ? 'Piso Doble' : 'Piso Simple'}
+                    color={bus.piso_doble ? 'primary' : 'default'}
                     size="small"
-                    onClick={() => onDelete(bus.id)}
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </TableCell>
-            </TableRow>
-          ))}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => onEdit(bus)}
+                      color="primary"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => onDelete(bus.id)}
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            );
+          })}
           {buses.length === 0 && (
             <TableRow>
               <TableCell colSpan={9} align="center">
@@ -100,4 +112,4 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
       </Table>
     </TableContainer>
   );
-} 
+}
