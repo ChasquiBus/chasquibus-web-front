@@ -1,3 +1,4 @@
+// src/components/buses/BusForm.tsx
 import React from 'react';
 import {
   Dialog,
@@ -15,6 +16,8 @@ import {
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { CreateBusDto } from '@/types/bus';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface BusFormProps {
   open: boolean;
@@ -47,6 +50,15 @@ export default function BusForm({
   choferes,
 }: BusFormProps) {
   const [error, setError] = React.useState<string | null>(null);
+  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (initialValues?.imagen) {
+      setPreviewImage(`${API_URL}/${initialValues.imagen}`);
+    } else {
+      setPreviewImage(null);
+    }
+  }, [initialValues]);
 
   const handleSubmit = async (values: CreateBusDto, { setSubmitting }: any) => {
     try {
@@ -72,6 +84,7 @@ export default function BusForm({
           marca_chasis: initialValues?.marca_chasis || '',
           marca_carroceria: initialValues?.marca_carroceria || '',
           piso_doble: initialValues?.piso_doble || false,
+          imagen: undefined, // File input is managed separately
         }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
@@ -80,7 +93,7 @@ export default function BusForm({
           <Form>
             <DialogContent>
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <TextField
                   select
@@ -171,6 +184,23 @@ export default function BusForm({
                 />
 
                 <Box sx={{ mt: 1 }}>
+                  {previewImage && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Imagen actual:
+                      </Typography>
+                      <img
+                        src={previewImage}
+                        alt="Current bus image"
+                        style={{
+                          width: '120px',
+                          height: '80px',
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                        }}
+                      />
+                    </Box>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
@@ -183,18 +213,20 @@ export default function BusForm({
                             value: file,
                           },
                         });
+                        // Update preview
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setPreviewImage(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
                       }
                     }}
                     style={{ display: 'none' }}
                     id="imagen-upload"
                   />
                   <label htmlFor="imagen-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      fullWidth
-                    >
-                      Subir Imagen del Bus
+                    <Button variant="outlined" component="span" fullWidth>
+                      {previewImage ? 'Cambiar Imagen del Bus' : 'Subir Imagen del Bus'}
                     </Button>
                   </label>
                 </Box>
@@ -226,4 +258,4 @@ export default function BusForm({
       </Formik>
     </Dialog>
   );
-} 
+}

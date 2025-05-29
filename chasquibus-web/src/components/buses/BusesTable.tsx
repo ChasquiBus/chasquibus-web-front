@@ -12,7 +12,6 @@ import {
   Box,
   Typography,
   Chip,
-  Avatar,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -52,18 +51,27 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
             return (
               <TableRow key={bus.id}>
                 <TableCell>
-                  <Avatar
-                    src={imageUrl}
-                    alt={`Bus ${bus.placa}`}
-                    sx={{ width: 50, height: 50 }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = ''; // Clear the broken image
-                      console.log(`Failed to load image: ${imageUrl}`); // Debug error
-                    }}
-                  >
-                    {bus.imagen ? null : bus.placa.charAt(0)}
-                  </Avatar>
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={`Bus ${bus.placa}`}
+                      style={{
+                        width: '120px',
+                        height: '80px',
+                        objectFit: 'cover',
+                        borderRadius: '4px', // Optional: slight rounding for aesthetics
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = ''; // Clear the broken image
+                        console.log(`Failed to load image: ${imageUrl}`); // Debug error
+                      }}
+                    />
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      {bus.placa.charAt(0)}
+                    </Typography>
+                  )}
                 </TableCell>
                 <TableCell>{bus.placa}</TableCell>
                 <TableCell>{bus.numero_bus}</TableCell>

@@ -1,3 +1,4 @@
+// src/services/buses.ts
 import { Bus, CreateBusDto, UpdateBusDto } from '@/types/bus';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -56,7 +57,7 @@ export const busesService = {
       if (value !== undefined) {
         if (key === 'imagen' && value instanceof File) {
           formData.append(key, value);
-        } else {
+        } else if (key !== 'imagen') { // Skip imagen if it's not a file to avoid sending the old URL
           formData.append(key, String(value));
         }
       }
@@ -82,4 +83,4 @@ export const busesService = {
     });
     if (!response.ok) throw new Error('Error al eliminar el bus');
   },
-}; 
+};
