@@ -32,7 +32,9 @@ export default function AdminCooperativasTable({ admins, onEdit, onDelete }: Pro
         <TableBody>
           {admins.map((admin) => (
             <TableRow key={admin.usuario.id}>
-              <TableCell>{admin.cooperativaTransporteId}</TableCell>
+              <TableCell>{
+                (admin as any).cooperativaTransporte?.nombre || admin.cooperativaTransporteId
+              }</TableCell>
               <TableCell>{admin.usuario.email}</TableCell>
               <TableCell>{admin.usuario.nombre}</TableCell>
               <TableCell>{admin.usuario.apellido}</TableCell>

@@ -4,14 +4,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const adminCooperativasService = {
   async getAll(): Promise<AdminCooperativa[]> {
-    const response = await fetch(`${API_URL}/admin-cooperativas`, {
+    const response = await fetch(`${API_URL}/admin-cooperativas/obtener-admins`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` },
     });
     if (!response.ok) throw new Error('Error al obtener los administradores');
     return response.json();
   },
   async create(data: CreateAdminCooperativaDto): Promise<AdminCooperativa> {
-    const response = await fetch(`${API_URL}/admin-cooperativas`, {
+    const response = await fetch(`${API_URL}/admin-cooperativas/crear-admin-coop`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
