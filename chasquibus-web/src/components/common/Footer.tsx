@@ -1,8 +1,13 @@
 "use client";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Footer() {
+  const theme = useTheme();
+  const { auth } = useAuth();
+  const user = auth.user;
   return (
     <Box component="footer" sx={{
       width: '100%',
@@ -10,15 +15,20 @@ export default function Footer() {
       px: 2,
       mt: 6,
       textAlign: 'center',
-      background: 'rgba(255,255,255,0.85)',
+      background: theme.palette.primary.main,
       borderTop: '1px solid #e0e0e0',
       fontSize: '0.95rem',
-      color: '#888',
+      color: theme.palette.getContrastText(theme.palette.primary.main),
       letterSpacing: 1,
     }}>
-      <Typography variant="body2" sx={{ fontWeight: 400 }}>
-        © {new Date().getFullYear()} Chasquibus. Todos los derechos reservados.
-      </Typography>
+      {user?.cooperativaTransporte?.nombre ? (
+        <>
+          <span style={{ fontWeight: 600 }}>{user.cooperativaTransporte.nombre}</span> &nbsp;|&nbsp;
+          © 2025. Todos los derechos reservados.
+        </>
+      ) : (
+        <>© 2025 Chasquibus. Todos los derechos reservados.</>
+      )}
     </Box>
   );
 }

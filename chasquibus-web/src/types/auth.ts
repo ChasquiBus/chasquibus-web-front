@@ -9,6 +9,13 @@ export interface User {
   updatedAt: string; // Cambiado a string para coincidir con timestamp del backend
   apellido?: string; // Opcional, para mapear con apellido del backend
   cedula?: string; // Opcional, para mapear con cedula del backend
+  cooperativaTransporte?: {
+    id: number;
+    nombre: string;
+    colorPrimario?: string;
+    colorSecundario?: string;
+    [key: string]: any;
+  };
 }
 
 export interface AuthState {
