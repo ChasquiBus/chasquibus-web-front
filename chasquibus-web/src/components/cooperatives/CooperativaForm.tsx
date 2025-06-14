@@ -26,7 +26,7 @@ interface CooperativaFormProps {
 const validationSchema = Yup.object({
   nombre: Yup.string().required('El nombre es obligatorio'),
   ruc: Yup.string()
-    .matches(/^\d{10,13}$/, 'El RUC debe tener entre 10 y 13 dígitos')
+    .matches(/^[0-9]{10,13}$/, 'El RUC debe tener entre 10 y 13 dígitos')
     .optional(),
   email: Yup.string().email('Email inválido').optional(),
   telefono: Yup.string().optional(),
@@ -43,16 +43,16 @@ export default function CooperativaForm({
   initialValues,
   title,
 }: CooperativaFormProps) {
-  const stableInitialValues = useMemo(() => initialValues || {
-    nombre: '',
-    ruc: '',
-    email: '',
-    telefono: '',
-    direccion: '',
-    sitioWeb: '',
-    colorPrimario: '',
-    colorSecundario: '',
-  }, [initialValues]);
+  const stableInitialValues = useMemo(() => ({
+    nombre: initialValues?.nombre || '',
+    ruc: initialValues?.ruc || '',
+    email: initialValues?.email || '',
+    telefono: initialValues?.telefono || '',
+    direccion: initialValues?.direccion || '',
+    sitioWeb: initialValues?.sitioWeb || '',
+    colorPrimario: /^#[0-9A-Fa-f]{6}$/.test(initialValues?.colorPrimario || '') ? initialValues?.colorPrimario : '#000000',
+    colorSecundario: /^#[0-9A-Fa-f]{6}$/.test(initialValues?.colorSecundario || '') ? initialValues?.colorSecundario : '#000000',
+  }), [initialValues]);
 
   const formik = useFormik({
     initialValues: stableInitialValues,
