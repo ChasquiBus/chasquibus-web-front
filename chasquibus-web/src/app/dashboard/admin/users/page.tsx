@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  Box, Button, Typography, Alert, Snackbar, CircularProgress
+  Box, Button, Typography, Alert, Snackbar, CircularProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { adminCooperativasService } from "@/services/adminCooperativas";
@@ -22,6 +23,8 @@ export default function AdminUsersPage() {
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
     open: false, message: "", severity: "success"
   });
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const loadData = async () => {
     try {
@@ -42,9 +45,9 @@ export default function AdminUsersPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  const handleCreate = async (values: CreateAdminCooperativaDto) => {
+  const handleCreate = async (values: CreateAdminCooperativaDto | Partial<CreateAdminCooperativaDto>) => {
     try {
-      await adminCooperativasService.create(values);
+      await adminCooperativasService.create(values as CreateAdminCooperativaDto);
       setSnackbar({ open: true, message: "Administrador creado exitosamente", severity: "success" });
       loadData();
     } catch {
@@ -54,8 +57,9 @@ export default function AdminUsersPage() {
 
   const handleEdit = async (values: Partial<CreateAdminCooperativaDto>) => {
     if (editId === null) return;
+    const { cooperativaTransporteId, ...rest } = values;
     try {
-      await adminCooperativasService.update(editId, values);
+      await adminCooperativasService.update(editId, rest);
       setSnackbar({ open: true, message: "Administrador actualizado exitosamente", severity: "success" });
       loadData();
     } catch {
@@ -64,20 +68,27 @@ export default function AdminUsersPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("¿Está seguro de eliminar este administrador?")) return;
+    setDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteId === null) return;
     try {
-      await adminCooperativasService.delete(id);
+      await adminCooperativasService.delete(deleteId);
       setSnackbar({ open: true, message: "Administrador eliminado exitosamente", severity: "success" });
       loadData();
     } catch {
       setSnackbar({ open: true, message: "Error al eliminar el administrador", severity: "error" });
+    } finally {
+      setConfirmOpen(false);
+      setDeleteId(null);
     }
   };
 
   const handleOpenForm = (admin?: AdminCooperativa) => {
     if (admin) {
       setSelectedAdmin({
-        cooperativaTransporteId: admin.cooperativaTransporteId,
         email: admin.usuario.email,
         nombre: admin.usuario.nombre,
         apellido: admin.usuario.apellido,
@@ -139,6 +150,14 @@ export default function AdminUsersPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>¿Está seguro de eliminar este administrador?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} color="inherit">Cancelar</Button>
+          <Button onClick={confirmDelete} color="error" variant="contained">Eliminar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 } 

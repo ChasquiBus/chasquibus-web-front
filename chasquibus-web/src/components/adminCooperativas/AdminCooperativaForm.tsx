@@ -19,7 +19,6 @@ interface Props {
 }
 
 const validationSchema = Yup.object({
-  cooperativaTransporteId: Yup.number().required('Seleccione una cooperativa'),
   email: Yup.string().email('Email inválido').required('El email es obligatorio'),
   password: Yup.string().when('isEdit', {
     is: false,
@@ -38,7 +37,6 @@ export default function AdminCooperativaForm({
 }: Props) {
   const formik = useFormik({
     initialValues: {
-      cooperativaTransporteId: initialValues?.cooperativaTransporteId || '',
       email: initialValues?.email || '',
       password: '',
       nombre: initialValues?.nombre || '',
@@ -50,11 +48,12 @@ export default function AdminCooperativaForm({
     enableReinitialize: true,
     validationSchema,
     onSubmit: async (values) => {
+      let data = { ...values };
       if (isEdit && !values.password) {
-        const { password, ...rest } = values;
+        const { password, ...rest } = data;
         await onSubmit(rest);
       } else {
-        await onSubmit(values);
+        await onSubmit(data);
       }
       onClose();
     },
@@ -66,23 +65,6 @@ export default function AdminCooperativaForm({
       <form onSubmit={formik.handleSubmit}>
         <DialogContent>
           <Stack spacing={2}>
-            <TextField
-              select
-              fullWidth
-              id="cooperativaTransporteId"
-              name="cooperativaTransporteId"
-              label="Cooperativa"
-              value={formik.values.cooperativaTransporteId}
-              onChange={formik.handleChange}
-              error={formik.touched.cooperativaTransporteId && Boolean(formik.errors.cooperativaTransporteId)}
-              helperText={formik.touched.cooperativaTransporteId && formik.errors.cooperativaTransporteId}
-            >
-              {cooperativas.map((coop) => (
-                <MenuItem key={coop.id} value={coop.id}>
-                  {coop.nombre}
-                </MenuItem>
-              ))}
-            </TextField>
             <TextField
               fullWidth
               id="email"
