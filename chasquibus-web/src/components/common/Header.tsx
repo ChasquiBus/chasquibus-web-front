@@ -11,6 +11,7 @@ import Divider from '@mui/material/Divider';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@mui/material/styles';
 
 function getInitials(name: string) {
   const names = name.trim().split(' ');
@@ -23,6 +24,7 @@ export default function Header() {
   const user = auth.user;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const theme = useTheme();
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -39,14 +41,22 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="static" color="default" elevation={2} sx={{ background: 'rgba(255,255,255,0.95)' }}>
+    <AppBar position="static" color="default" elevation={2} sx={{ background: theme.palette.primary.main, color: theme.palette.getContrastText(theme.palette.primary.main) }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Logo y nombre */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Image src="/images/logochaqui.jpg" alt="Chasquibus Logo" width={60} height={50} style={{ borderRadius: 8 }} />
-          <Typography variant="h6" color="primary" fontWeight={700} sx={{ ml: 1, letterSpacing: 1 }}>
-            Chasquibus
-          </Typography>
+          <Box>
+            {user?.cooperativaTransporte?.nombre ? (
+              <Typography variant="h6" color="inherit" fontWeight={700} sx={{ ml: 1, letterSpacing: 1 }}>
+                {user.cooperativaTransporte.nombre}
+              </Typography>
+            ) : (
+              <Typography variant="h6" color="inherit" fontWeight={700} sx={{ ml: 1, letterSpacing: 1 }}>
+                Chasquibus
+              </Typography>
+            )}
+          </Box>
         </Box>
         {/* Avatar, nombre y menú de usuario */}
         {user ? (
