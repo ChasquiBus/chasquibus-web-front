@@ -31,13 +31,12 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Imagen</TableCell>
             <TableCell>Placa</TableCell>
             <TableCell>Número de Bus</TableCell>
             <TableCell>Cooperativa</TableCell>
-            <TableCell>Chofer</TableCell>
             <TableCell>Marca Chasis</TableCell>
             <TableCell>Marca Carrocería</TableCell>
+            <TableCell>Total Asientos</TableCell>
             <TableCell>Tipo</TableCell>
             <TableCell>Acciones</TableCell>
           </TableRow>
@@ -74,11 +73,10 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
                   )}
                 </TableCell>
                 <TableCell>{bus.placa}</TableCell>
-                <TableCell>{bus.numero_bus}</TableCell>
                 <TableCell>{bus.cooperativa_id}</TableCell>
-                <TableCell>{bus.chofer_id}</TableCell>
                 <TableCell>{bus.marca_chasis || '-'}</TableCell>
                 <TableCell>{bus.marca_carroceria || '-'}</TableCell>
+                <TableCell>{bus.total_asientos}</TableCell>
                 <TableCell>
                   <Chip
                     label={bus.piso_doble ? 'Piso Doble' : 'Piso Simple'}
@@ -109,7 +107,7 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
           })}
           {buses.length === 0 && (
             <TableRow>
-              <TableCell colSpan={9} align="center">
+              <TableCell colSpan={8} align="center">
                 <Typography variant="body1" color="text.secondary">
                   No hay buses registrados
                 </Typography>

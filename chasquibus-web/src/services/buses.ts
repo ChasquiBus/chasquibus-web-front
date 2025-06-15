@@ -25,50 +25,26 @@ export const busesService = {
   },
 
   async create(data: CreateBusDto): Promise<Bus> {
-    const formData = new FormData();
-    
-    // Agregar campos del formulario
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined) {
-        if (key === 'imagen' && value instanceof File) {
-          formData.append(key, value);
-        } else {
-          formData.append(key, String(value));
-        }
-      }
-    });
-
     const response = await fetch(`${API_URL}/buses`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Error al crear el bus');
     return response.json();
   },
 
   async update(id: number, data: UpdateBusDto): Promise<Bus> {
-    const formData = new FormData();
-    
-    // Agregar campos del formulario
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined) {
-        if (key === 'imagen' && value instanceof File) {
-          formData.append(key, value);
-        } else if (key !== 'imagen') { // Skip imagen if it's not a file to avoid sending the old URL
-          formData.append(key, String(value));
-        }
-      }
-    });
-
     const response = await fetch(`${API_URL}/buses/${id}`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Error al actualizar el bus');
     return response.json();
