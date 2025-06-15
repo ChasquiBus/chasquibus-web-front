@@ -29,6 +29,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import type { NavigationItem } from '@/constants/navigation';
+import AirlineSeatLegroomNormalIcon from '@mui/icons-material/AirlineSeatLegroomNormal';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Usuarios': <PeopleIcon color="primary" />,
@@ -40,6 +41,7 @@ const iconMap: Record<string, React.ReactNode> = {
   'Paradas y Rutas': <MapIcon color="primary" />,
   'Hoja de Ruta': <AssignmentIcon color="primary" />,
   'Gestión de Choferes': <GroupIcon color="primary" />,
+  'Configuración Asientos': <AirlineSeatLegroomNormalIcon color="primary" />,
 };
 
 interface NavigationProps {

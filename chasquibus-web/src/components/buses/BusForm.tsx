@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,6 +10,7 @@ import {
   Switch,
   Box,
   Alert,
+  Typography,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -18,22 +19,29 @@ import { CreateBusDto } from '@/types/bus';
 interface BusFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: CreateBusDto) => Promise<void>;
+  onSubmit: (values: CreateBusDto, imagen?: File) => Promise<void>;
   initialValues?: Partial<CreateBusDto>;
   title: string;
-  cooperativaId: number; // Ahora se recibe la cooperativaId directamente
+  cooperativaId: number;
 }
 
 const validationSchema = Yup.object({
-  placa: Yup.string().required('La placa es requerida'),
-  numero_bus: Yup.string().required('El número de bus es requerido'),
-  marca_chasis: Yup.string(),
-  marca_carroceria: Yup.string(),
+  placa: Yup.string()
+    .required('La placa es requerida')
+    .max(10, 'La placa no puede tener más de 10 caracteres'),
+  numero_bus: Yup.string()
+    .required('El número de bus es requerido')
+    .max(10, 'El número de bus no puede tener más de 10 caracteres'),
+  marca_chasis: Yup.string()
+    .max(50, 'La marca del chasis no puede tener más de 50 caracteres'),
+  marca_carroceria: Yup.string()
+    .max(50, 'La marca de la carrocería no puede tener más de 50 caracteres'),
   piso_doble: Yup.boolean().required(),
   total_asientos: Yup.number()
     .required('El total de asientos es requerido')
     .min(1, 'Debe tener al menos 1 asiento')
     .max(100, 'No puede tener más de 100 asientos'),
+  activo: Yup.boolean(),
 });
 
 export default function BusForm({
@@ -44,13 +52,26 @@ export default function BusForm({
   title,
   cooperativaId,
 }: BusFormProps) {
-  const [error, setError] = React.useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (values: CreateBusDto, { setSubmitting }: any) => {
     try {
       setError(null);
-      // El cooperativa_id se añade aquí directamente desde las props
-      await onSubmit({ ...values, cooperativa_id: cooperativaId });
+      await onSubmit({ ...values, cooperativa_id: cooperativaId }, selectedImage || undefined);
       onClose();
     } catch (err) {
       setError('Error al guardar el bus. Por favor, intente nuevamente.');
@@ -71,6 +92,7 @@ export default function BusForm({
           marca_carroceria: initialValues?.marca_carroceria || '',
           piso_doble: initialValues?.piso_doble || false,
           total_asientos: initialValues?.total_asientos || 45,
+          activo: initialValues?.activo ?? true,
         }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
@@ -81,8 +103,6 @@ export default function BusForm({
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {/* El campo cooperativa_id ya no es necesario aquí, se obtiene del token */}
-
                 <TextField
                   fullWidth
                   name="placa"
@@ -140,6 +160,30 @@ export default function BusForm({
                   inputProps={{ min: 1, max: 100 }}
                 />
 
+                <Box>
+                  <input
+                    accept="image/*"
+                    type="file"
+                    id="imagen-bus"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="imagen-bus">
+                    <Button variant="outlined" component="span">
+                      {selectedImage ? 'Cambiar Imagen' : 'Subir Imagen'}
+                    </Button>
+                  </label>
+                  {previewUrl && (
+                    <Box sx={{ mt: 2 }}>
+                      <img
+                        src={previewUrl}
+                        alt="Vista previa"
+                        style={{ maxWidth: '100%', maxHeight: '200px' }}
+                      />
+                    </Box>
+                  )}
+                </Box>
+
                 <FormControlLabel
                   control={
                     <Switch
@@ -149,6 +193,17 @@ export default function BusForm({
                     />
                   }
                   label="Bus de Piso Doble"
+                />
+
+                <FormControlLabel
+                  control={
+                    <Switch
+                      name="activo"
+                      checked={values.activo}
+                      onChange={handleChange}
+                    />
+                  }
+                  label="Bus Activo"
                 />
               </Box>
             </DialogContent>

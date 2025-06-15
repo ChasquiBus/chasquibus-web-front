@@ -41,8 +41,13 @@ export default function UserBusesPage() {
       const data = await busesService.getAll();
       setBuses(data);
       setError(null);
-    } catch {
+    } catch (err) {
       setError('Error al cargar los buses');
+      setSnackbar({
+        open: true,
+        message: 'Error al cargar los buses',
+        severity: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -57,7 +62,7 @@ export default function UserBusesPage() {
     }
   }, [userCooperativaId]);
 
-  const handleCreate = async (values: CreateBusDto) => {
+  const handleCreate = async (values: CreateBusDto, imagen?: File) => {
     if (!userCooperativaId) {
       setSnackbar({
         open: true,
@@ -67,14 +72,14 @@ export default function UserBusesPage() {
       return;
     }
     try {
-      await busesService.create({ ...values, cooperativa_id: userCooperativaId });
+      await busesService.create({ ...values, cooperativa_id: userCooperativaId }, imagen);
       setSnackbar({
         open: true,
         message: 'Bus creado exitosamente',
         severity: 'success',
       });
       loadBuses();
-    } catch {
+    } catch (err) {
       setSnackbar({
         open: true,
         message: 'Error al crear el bus',
@@ -83,7 +88,7 @@ export default function UserBusesPage() {
     }
   };
 
-  const handleEdit = async (values: CreateBusDto) => {
+  const handleEdit = async (values: CreateBusDto, imagen?: File) => {
     if (!selectedBus) return;
     if (!userCooperativaId) {
       setSnackbar({
@@ -94,14 +99,14 @@ export default function UserBusesPage() {
       return;
     }
     try {
-      await busesService.update(selectedBus.id, { ...values, cooperativa_id: userCooperativaId });
+      await busesService.update(selectedBus.id, { ...values, cooperativa_id: userCooperativaId }, imagen);
       setSnackbar({
         open: true,
         message: 'Bus actualizado exitosamente',
         severity: 'success',
       });
       loadBuses();
-    } catch {
+    } catch (err) {
       setSnackbar({
         open: true,
         message: 'Error al actualizar el bus',
@@ -120,7 +125,7 @@ export default function UserBusesPage() {
         severity: 'success',
       });
       loadBuses();
-    } catch {
+    } catch (err) {
       setSnackbar({
         open: true,
         message: 'Error al eliminar el bus',

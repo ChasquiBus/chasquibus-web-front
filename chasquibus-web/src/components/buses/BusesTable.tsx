@@ -1,5 +1,5 @@
 // src/components/buses/BusesTable.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -26,6 +26,13 @@ interface BusesTableProps {
 }
 
 export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps) {
+  // Estado para controlar imágenes que fallaron
+  const [erroresImagen, setErroresImagen] = useState<{ [id: number]: boolean }>({});
+
+  const handleImageError = (busId: number) => {
+    setErroresImagen((prev) => ({ ...prev, [busId]: true }));
+  };
+
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -33,7 +40,7 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
           <TableRow>
             <TableCell>Placa</TableCell>
             <TableCell>Número de Bus</TableCell>
-            <TableCell>Cooperativa</TableCell>
+            {/* <TableCell>Cooperativa</TableCell> */}
             <TableCell>Marca Chasis</TableCell>
             <TableCell>Marca Carrocería</TableCell>
             <TableCell>Total Asientos</TableCell>
@@ -46,11 +53,11 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
             const imageUrl = bus.imagen
               ? `${API_URL}/${bus.imagen.startsWith('upload/buses/') ? bus.imagen : `upload/buses/${bus.imagen}`}`
               : undefined;
-            console.log(`Image URL for bus ${bus.id}: ${imageUrl}`); // Debug log
+            // console.log(`Image URL for bus ${bus.id}: ${imageUrl}`); // Debug log
             return (
               <TableRow key={bus.id}>
                 <TableCell>
-                  {imageUrl ? (
+                  {imageUrl && !erroresImagen[bus.id] ? (
                     <img
                       src={imageUrl}
                       alt={`Bus ${bus.placa}`}
@@ -58,22 +65,18 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
                         width: '120px',
                         height: '80px',
                         objectFit: 'cover',
-                        borderRadius: '4px', // Optional: slight rounding for aesthetics
+                        borderRadius: '4px',
                       }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = ''; // Clear the broken image
-                        console.log(`Failed to load image: ${imageUrl}`); // Debug error
-                      }}
+                      onError={() => handleImageError(bus.id)}
                     />
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      {bus.placa.charAt(0)}
+                      Sin imagen
                     </Typography>
                   )}
                 </TableCell>
                 <TableCell>{bus.placa}</TableCell>
-                <TableCell>{bus.cooperativa_id}</TableCell>
+                {/* <TableCell>{bus.cooperativa_id}</TableCell> */}
                 <TableCell>{bus.marca_chasis || '-'}</TableCell>
                 <TableCell>{bus.marca_carroceria || '-'}</TableCell>
                 <TableCell>{bus.total_asientos}</TableCell>
