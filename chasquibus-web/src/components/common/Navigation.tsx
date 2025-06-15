@@ -25,6 +25,7 @@ import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import MapIcon from '@mui/icons-material/Map';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import GroupIcon from '@mui/icons-material/Group';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import type { NavigationItem } from '@/constants/navigation';
@@ -38,6 +39,7 @@ const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Frecuencias': <ScheduleIcon color="primary" />,
   'Paradas y Rutas': <MapIcon color="primary" />,
   'Hoja de Ruta': <AssignmentIcon color="primary" />,
+  'Gestión de Choferes': <GroupIcon color="primary" />,
 };
 
 interface NavigationProps {

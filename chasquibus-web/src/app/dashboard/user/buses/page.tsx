@@ -14,6 +14,7 @@ import { Bus, CreateBusDto } from '@/types/bus';
 import { busesService } from '@/services/buses';
 import BusForm from '@/components/buses/BusForm';
 import BusesTable from '@/components/buses/BusesTable';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function UserBusesPage() {
   const [buses, setBuses] = useState<Bus[]>([]);
@@ -31,16 +32,8 @@ export default function UserBusesPage() {
     severity: 'success',
   });
 
-  // Datos de ejemplo para cooperativas y choferes
-  const cooperativas = [
-    { id: 1, nombre: 'Cooperativa 1' },
-    { id: 2, nombre: 'Cooperativa 2' },
-  ];
-
-  const choferes = [
-    { id: 1, nombre: 'Juan', apellido: 'Pérez' },
-    { id: 2, nombre: 'María', apellido: 'González' },
-  ];
+  const { auth } = useAuth();
+  const userCooperativaId = auth.user?.cooperativaTransporte?.id;
 
   const loadBuses = async () => {
     try {
@@ -56,12 +49,25 @@ export default function UserBusesPage() {
   };
 
   useEffect(() => {
-    loadBuses();
-  }, []);
+    if (userCooperativaId) {
+      loadBuses();
+    } else {
+      setError('No se pudo obtener la información de la cooperativa del usuario.');
+      setLoading(false);
+    }
+  }, [userCooperativaId]);
 
   const handleCreate = async (values: CreateBusDto) => {
+    if (!userCooperativaId) {
+      setSnackbar({
+        open: true,
+        message: 'Error: No se pudo obtener la cooperativa del usuario.',
+        severity: 'error',
+      });
+      return;
+    }
     try {
-      await busesService.create(values);
+      await busesService.create({ ...values, cooperativa_id: userCooperativaId });
       setSnackbar({
         open: true,
         message: 'Bus creado exitosamente',
@@ -79,8 +85,16 @@ export default function UserBusesPage() {
 
   const handleEdit = async (values: CreateBusDto) => {
     if (!selectedBus) return;
+    if (!userCooperativaId) {
+      setSnackbar({
+        open: true,
+        message: 'Error: No se pudo obtener la cooperativa del usuario.',
+        severity: 'error',
+      });
+      return;
+    }
     try {
-      await busesService.update(selectedBus.id, values);
+      await busesService.update(selectedBus.id, { ...values, cooperativa_id: userCooperativaId });
       setSnackbar({
         open: true,
         message: 'Bus actualizado exitosamente',
@@ -162,15 +176,16 @@ export default function UserBusesPage() {
         />
       )}
 
-      <BusForm
-        open={openForm}
-        onClose={handleCloseForm}
-        onSubmit={selectedBus ? handleEdit : handleCreate}
-        initialValues={selectedBus || undefined}
-        title={selectedBus ? 'Editar Bus' : 'Nuevo Bus'}
-        cooperativas={cooperativas}
-        choferes={choferes}
-      />
+      {userCooperativaId && (
+        <BusForm
+          open={openForm}
+          onClose={handleCloseForm}
+          onSubmit={selectedBus ? handleEdit : handleCreate}
+          initialValues={selectedBus || undefined}
+          title={selectedBus ? 'Editar Bus' : 'Nuevo Bus'}
+          cooperativaId={userCooperativaId}
+        />
+      )}
 
       <Snackbar
         open={snackbar.open}

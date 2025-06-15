@@ -19,6 +19,7 @@ export const navigationByRole: RoleNavigation = {
   ],
   user: [
     { label: 'Gestión de Buses', href: '/dashboard/user/buses', icon: 'DirectionsBus' },
+    { label: 'Gestión de Choferes', href: '/dashboard/user/choferes', icon: 'Group' },
     { label: 'Gestión de Frecuencias', href: '/dashboard/user/frequencies', icon: 'Schedule' },
     { label: 'Paradas y Rutas', href: '/dashboard/user/stops-routes', icon: 'Map' },
     { label: 'Hoja de Ruta', href: '/dashboard/user/route-sheet', icon: 'Assignment' },
