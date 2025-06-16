@@ -11,6 +11,7 @@ import {
   Box,
   Alert,
   Typography,
+  MenuItem,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -25,7 +26,7 @@ interface BusFormProps {
   cooperativaId: number;
 }
 
-const validationSchema = Yup.object({
+const validationSchema = Yup.object().shape({
   placa: Yup.string()
     .required('La placa es requerida')
     .max(10, 'La placa no puede tener más de 10 caracteres'),
@@ -42,7 +43,31 @@ const validationSchema = Yup.object({
     .min(1, 'Debe tener al menos 1 asiento')
     .max(100, 'No puede tener más de 100 asientos'),
   activo: Yup.boolean(),
+  total_asientos_piso2: Yup.number().when('piso_doble', {
+    is: true,
+    then: (schema) =>
+      schema
+        .required('El total de asientos del piso 2 es requerido para buses de doble piso')
+        .min(1, 'Debe tener al menos 1 asiento en el piso 2')
+        .max(100, 'No puede tener más de 100 asientos en el piso 2'),
+    otherwise: (schema) => schema.notRequired().nullable(),
+  }),
 });
+
+const CHASIS_OPTIONS = [
+  'HINO',
+  'MERCEDES-BENZ',
+  'SCANIA',
+  'VOLVO',
+  'HYUNDAI',
+];
+const CARROCERIA_OPTIONS = [
+  'Marcopolo',
+  'Carrocerías Cepeda',
+  'BUSCARS',
+  'IMETAM C.A.',
+  'Industrias MIRAL',
+];
 
 export default function BusForm({
   open,
@@ -93,6 +118,7 @@ export default function BusForm({
           piso_doble: initialValues?.piso_doble || false,
           total_asientos: initialValues?.total_asientos || 45,
           activo: initialValues?.activo ?? true,
+          total_asientos_piso2: initialValues?.total_asientos_piso2 || (initialValues?.piso_doble ? 20 : undefined),
         }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
@@ -127,6 +153,7 @@ export default function BusForm({
 
                 <TextField
                   fullWidth
+                  select
                   name="marca_chasis"
                   label="Marca del Chasis"
                   value={values.marca_chasis}
@@ -134,10 +161,15 @@ export default function BusForm({
                   onBlur={handleBlur}
                   error={touched.marca_chasis && Boolean(errors.marca_chasis)}
                   helperText={touched.marca_chasis && errors.marca_chasis}
-                />
+                >
+                  {CHASIS_OPTIONS.map(opt => (
+                    <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                  ))}
+                </TextField>
 
                 <TextField
                   fullWidth
+                  select
                   name="marca_carroceria"
                   label="Marca de la Carrocería"
                   value={values.marca_carroceria}
@@ -145,7 +177,11 @@ export default function BusForm({
                   onBlur={handleBlur}
                   error={touched.marca_carroceria && Boolean(errors.marca_carroceria)}
                   helperText={touched.marca_carroceria && errors.marca_carroceria}
-                />
+                >
+                  {CARROCERIA_OPTIONS.map(opt => (
+                    <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                  ))}
+                </TextField>
 
                 <TextField
                   fullWidth
@@ -194,6 +230,21 @@ export default function BusForm({
                   }
                   label="Bus de Piso Doble"
                 />
+
+                {values.piso_doble && (
+                  <TextField
+                    fullWidth
+                    name="total_asientos_piso2"
+                    label="Total de Asientos (Piso 2)"
+                    type="number"
+                    value={values.total_asientos_piso2 || ''}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.total_asientos_piso2 && Boolean(errors.total_asientos_piso2)}
+                    helperText={touched.total_asientos_piso2 && errors.total_asientos_piso2}
+                    inputProps={{ min: 1, max: 100 }}
+                  />
+                )}
 
                 <FormControlLabel
                   control={

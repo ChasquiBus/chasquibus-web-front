@@ -8,6 +8,7 @@ export interface Bus {
   imagen?: string;
   piso_doble: boolean;
   total_asientos: number;
+  total_asientos_piso2?: number;
   activo?: boolean;
 }
 
@@ -20,6 +21,7 @@ export interface CreateBusDto {
   imagen?: string;
   piso_doble: boolean;
   total_asientos: number;
+  total_asientos_piso2?: number;
   activo?: boolean;
 }
 

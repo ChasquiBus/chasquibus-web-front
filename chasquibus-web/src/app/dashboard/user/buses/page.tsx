@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -8,9 +8,13 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { Bus, CreateBusDto } from '@/types/bus';
+import { Bus, CreateBusDto, UpdateBusDto } from '@/types/bus';
 import { busesService } from '@/services/buses';
 import BusForm from '@/components/buses/BusForm';
 import BusesTable from '@/components/buses/BusesTable';
@@ -35,7 +39,7 @@ export default function UserBusesPage() {
   const { auth } = useAuth();
   const userCooperativaId = auth.user?.cooperativaTransporte?.id;
 
-  const loadBuses = async () => {
+  const fetchBuses = useCallback(async () => {
     try {
       setLoading(true);
       const data = await busesService.getAll();
@@ -51,16 +55,16 @@ export default function UserBusesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setBuses, setLoading, setError]);
 
   useEffect(() => {
     if (userCooperativaId) {
-      loadBuses();
+      fetchBuses();
     } else {
       setError('No se pudo obtener la información de la cooperativa del usuario.');
       setLoading(false);
     }
-  }, [userCooperativaId]);
+  }, [userCooperativaId, fetchBuses]);
 
   const handleCreate = async (values: CreateBusDto, imagen?: File) => {
     if (!userCooperativaId) {
@@ -78,7 +82,7 @@ export default function UserBusesPage() {
         message: 'Bus creado exitosamente',
         severity: 'success',
       });
-      loadBuses();
+      fetchBuses();
     } catch (err) {
       setSnackbar({
         open: true,
@@ -105,30 +109,11 @@ export default function UserBusesPage() {
         message: 'Bus actualizado exitosamente',
         severity: 'success',
       });
-      loadBuses();
+      fetchBuses();
     } catch (err) {
       setSnackbar({
         open: true,
         message: 'Error al actualizar el bus',
-        severity: 'error',
-      });
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Está seguro de eliminar este bus?')) return;
-    try {
-      await busesService.delete(id);
-      setSnackbar({
-        open: true,
-        message: 'Bus eliminado exitosamente',
-        severity: 'success',
-      });
-      loadBuses();
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: 'Error al eliminar el bus',
         severity: 'error',
       });
     }
@@ -146,6 +131,36 @@ export default function UserBusesPage() {
   const handleCloseForm = () => {
     setOpenForm(false);
     setSelectedBus(null);
+  };
+
+  // Lógica para el diálogo de confirmación de eliminación
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [busToDeleteId, setBusToDeleteId] = useState<number | null>(null);
+
+  const handleDeleteClick = (id: number) => {
+    setBusToDeleteId(id);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (busToDeleteId !== null) {
+      try {
+        await busesService.delete(busToDeleteId);
+        setSnackbar({ open: true, message: 'Bus eliminado correctamente', severity: 'success' });
+        fetchBuses();
+      } catch (err: any) {
+        console.error('Error al eliminar el bus:', err);
+        setSnackbar({ open: true, message: err.message || 'Error al eliminar el bus.', severity: 'error' });
+      } finally {
+        setOpenDeleteDialog(false);
+        setBusToDeleteId(null);
+      }
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setOpenDeleteDialog(false);
+    setBusToDeleteId(null);
   };
 
   return (
@@ -177,7 +192,7 @@ export default function UserBusesPage() {
         <BusesTable
           buses={buses}
           onEdit={handleOpenForm}
-          onDelete={handleDelete}
+          onDelete={handleDeleteClick}
         />
       )}
 
@@ -187,23 +202,43 @@ export default function UserBusesPage() {
           onClose={handleCloseForm}
           onSubmit={selectedBus ? handleEdit : handleCreate}
           initialValues={selectedBus || undefined}
-          title={selectedBus ? 'Editar Bus' : 'Nuevo Bus'}
+          title={selectedBus ? 'Editar Bus' : 'Crear Nuevo Bus'}
           cooperativaId={userCooperativaId}
         />
       )}
 
+      {/* Diálogo de Confirmación de Eliminación */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCancelDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirmar Eliminación"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography id="alert-dialog-description">
+            ¿Está seguro de que desea eliminar este bus?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(s => ({...s, open: false}))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
+        <Alert severity={snackbar.severity} sx={{ width: '100%' }}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );
