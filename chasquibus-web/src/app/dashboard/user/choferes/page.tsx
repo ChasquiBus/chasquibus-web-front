@@ -52,6 +52,11 @@ const ChoferesPage = () => {
       setLoading(false);
       return;
     }
+    if (!userCooperativaId) {
+      setError('No se encontró el ID de la cooperativa.');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {

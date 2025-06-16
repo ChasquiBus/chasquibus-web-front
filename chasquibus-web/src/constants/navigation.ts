@@ -23,6 +23,7 @@ export const navigationByRole: RoleNavigation = {
     { label: 'Gestión de Frecuencias', href: '/dashboard/user/frequencies', icon: 'Schedule' },
     { label: 'Paradas y Rutas', href: '/dashboard/user/stops-routes', icon: 'Map' },
     { label: 'Hoja de Ruta', href: '/dashboard/user/route-sheet', icon: 'Assignment' },
+    { label: 'Configuración Asientos', href: '/dashboard/user/configuracion-asientos', icon: 'Settings' },
     { label: 'Cerrar Sesión', href: '/auth/login', icon: 'Logout' },
   ],
   office: [

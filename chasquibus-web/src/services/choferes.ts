@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export const choferesService = {
   getAllChoferes: async (cooperativaId: number, token: string): Promise<Chofer[]> => {
-    const response = await axios.get(`${API_URL}/choferes/${cooperativaId}`, {
+    const response = await axios.get(`${API_URL}/choferes?includeDeleted=${cooperativaId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
