@@ -1,4 +1,13 @@
 import { UserRole } from '../types/auth';
+import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
+import GroupIcon from '@mui/icons-material/Group';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
+import RoomIcon from '@mui/icons-material/Room';
+import AltRouteIcon from '@mui/icons-material/AltRoute';
+import GavelIcon from '@mui/icons-material/Gavel';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import WorkIcon from '@mui/icons-material/Work';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 export interface NavigationItem {
   label: string;
@@ -20,10 +29,12 @@ export const navigationByRole: RoleNavigation = {
   user: [
     { label: 'Gestión de Buses', href: '/dashboard/user/buses', icon: 'DirectionsBus' },
     { label: 'Gestión de Choferes', href: '/dashboard/user/choferes', icon: 'Group' },
-    { label: 'Gestión de Frecuencias', href: '/dashboard/user/frequencies', icon: 'Schedule' },
-    { label: 'Paradas y Rutas', href: '/dashboard/user/stops-routes', icon: 'Map' },
+    { label: 'Gestión de Ciudades', href: '/dashboard/user/ciudades', icon: 'LocationCity' },
+    { label: 'Gestión de Paradas', href: '/dashboard/user/paradas', icon: 'Room' },
+    { label: 'Gestión de Rutas', href: '/dashboard/user/rutas', icon: 'AltRoute' },
+    { label: 'Resolución', href: '/dashboard/user/resolucion', icon: 'Gavel' },
+    { label: 'Gestión Oficinistas', href: '/dashboard/user/oficinistas', icon: 'Work' },
     { label: 'Hoja de Ruta', href: '/dashboard/user/route-sheet', icon: 'Assignment' },
-    { label: 'Configuración Asientos', href: '/dashboard/user/configuracion-asientos', icon: 'Settings' },
     { label: 'Cerrar Sesión', href: '/auth/login', icon: 'Logout' },
   ],
   office: [

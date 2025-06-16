@@ -30,6 +30,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import type { NavigationItem } from '@/constants/navigation';
 import AirlineSeatLegroomNormalIcon from '@mui/icons-material/AirlineSeatLegroomNormal';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
+import RoomIcon from '@mui/icons-material/Room';
+import AltRouteIcon from '@mui/icons-material/AltRoute';
+import GavelIcon from '@mui/icons-material/Gavel';
+import WorkIcon from '@mui/icons-material/Work';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Usuarios': <PeopleIcon color="primary" />,
@@ -42,6 +47,11 @@ const iconMap: Record<string, React.ReactNode> = {
   'Hoja de Ruta': <AssignmentIcon color="primary" />,
   'Gestión de Choferes': <GroupIcon color="primary" />,
   'Configuración Asientos': <AirlineSeatLegroomNormalIcon color="primary" />,
+  'Gestión de Ciudades': <LocationCityIcon color="primary" />,
+  'Gestión de Paradas': <RoomIcon color="primary" />,
+  'Gestión de Rutas': <AltRouteIcon color="primary" />,
+  'Resolución': <GavelIcon color="primary" />,
+  'Gestión Oficinistas': <WorkIcon color="primary" />,
 };
 
 interface NavigationProps {
