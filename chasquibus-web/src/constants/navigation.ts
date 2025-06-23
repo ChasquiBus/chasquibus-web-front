@@ -8,6 +8,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import WorkIcon from '@mui/icons-material/Work';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AirlineSeatLegroomNormalIcon from '@mui/icons-material/AirlineSeatLegroomNormal';
 
 export interface NavigationItem {
   label: string;
@@ -28,6 +29,7 @@ export const navigationByRole: RoleNavigation = {
   ],
   user: [
     { label: 'Gestión de Buses', href: '/dashboard/user/buses', icon: 'DirectionsBus' },
+    { label: 'Configuración Asientos', href: '/dashboard/user/configuracion-asientos', icon: 'AirlineSeatLegroomNormal' },
     { label: 'Gestión de Choferes', href: '/dashboard/user/choferes', icon: 'Group' },
     { label: 'Gestión de Ciudades', href: '/dashboard/user/ciudades', icon: 'LocationCity' },
     { label: 'Gestión de Paradas', href: '/dashboard/user/paradas', icon: 'Room' },

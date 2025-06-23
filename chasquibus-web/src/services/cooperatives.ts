@@ -23,27 +23,45 @@ export const cooperativesService = {
     return response.json();
   },
 
-  async create(data: CreateCooperativaDto): Promise<Cooperativa> {
+  async create(data: CreateCooperativaDto & { logo?: File }): Promise<Cooperativa> {
+    const formData = new FormData();
+    formData.append('nombre', data.nombre);
+    if (data.ruc) formData.append('ruc', data.ruc);
+    if (data.colorPrimario) formData.append('colorPrimario', data.colorPrimario);
+    if (data.colorSecundario) formData.append('colorSecundario', data.colorSecundario);
+    if (data.sitioWeb) formData.append('sitioWeb', data.sitioWeb);
+    if (data.email) formData.append('email', data.email);
+    if (data.telefono) formData.append('telefono', data.telefono);
+    if (data.direccion) formData.append('direccion', data.direccion);
+    if (data.logo) formData.append('logo', data.logo);
     const response = await fetch(`${API_URL}/cooperativas`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
       },
-      body: JSON.stringify(data),
+      body: formData,
     });
     if (!response.ok) throw new Error('Error al crear la cooperativa');
     return response.json();
   },
 
-  async update(id: number, data: UpdateCooperativaDto): Promise<Cooperativa> {
+  async update(id: number, data: UpdateCooperativaDto & { logo?: File }): Promise<Cooperativa> {
+    const formData = new FormData();
+    formData.append('nombre', data.nombre);
+    if (data.ruc) formData.append('ruc', data.ruc);
+    if (data.colorPrimario) formData.append('colorPrimario', data.colorPrimario);
+    if (data.colorSecundario) formData.append('colorSecundario', data.colorSecundario);
+    if (data.sitioWeb) formData.append('sitioWeb', data.sitioWeb);
+    if (data.email) formData.append('email', data.email);
+    if (data.telefono) formData.append('telefono', data.telefono);
+    if (data.direccion) formData.append('direccion', data.direccion);
+    if (data.logo) formData.append('logo', data.logo);
     const response = await fetch(`${API_URL}/cooperativas/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
       },
-      body: JSON.stringify(data),
+      body: formData,
     });
     if (!response.ok) throw new Error('Error al actualizar la cooperativa');
     return response.json();

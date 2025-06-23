@@ -6,6 +6,7 @@ export interface PosicionAsiento {
   piso: number;
   tipoAsiento: 'NORMAL' | 'VIP';
   precio: string;
+  numeroAsiento: number;
 }
 
 export interface ConfiguracionAsientos {

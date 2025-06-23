@@ -13,6 +13,8 @@ import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 function getInitials(name: string) {
   const names = name.trim().split(' ');
   if (names.length === 1) return names[0][0].toUpperCase();
@@ -40,12 +42,18 @@ export default function Header() {
     window.location.href = '/auth/login';
   };
 
+  // Determinar logo cooperativa
+  let logoUrl = '/images/logochaqui.jpg';
+  if (user?.cooperativaTransporte?.logo) {
+    logoUrl = `${BACKEND_URL}/upload/cooperativas/${user.cooperativaTransporte.logo}`;
+  }
+
   return (
     <AppBar position="static" color="default" elevation={2} sx={{ background: theme.palette.primary.main, color: theme.palette.getContrastText(theme.palette.primary.main) }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Logo y nombre */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Image src="/images/logochaqui.jpg" alt="Chasquibus Logo" width={60} height={50} style={{ borderRadius: 8 }} />
+          <Image src={logoUrl} alt="Logo Cooperativa" width={60} height={50} style={{ borderRadius: 8, objectFit: 'contain', background: '#fff' }} />
           <Box>
             {user?.cooperativaTransporte?.nombre ? (
               <Typography variant="h6" color="inherit" fontWeight={700} sx={{ ml: 1, letterSpacing: 1 }}>

@@ -44,6 +44,7 @@ export default function AdminCooperativaForm({
       cedula: initialValues?.cedula || '',
       telefono: initialValues?.telefono || '',
       activo: initialValues?.activo ?? true,
+      cooperativaTransporteId: initialValues?.cooperativaTransporteId || '',
     },
     enableReinitialize: true,
     validationSchema,
@@ -126,6 +127,22 @@ export default function AdminCooperativaForm({
               error={formik.touched.telefono && Boolean(formik.errors.telefono)}
               helperText={formik.touched.telefono && formik.errors.telefono}
             />
+            <TextField
+              select
+              fullWidth
+              id="cooperativaTransporteId"
+              name="cooperativaTransporteId"
+              label="Cooperativa"
+              value={formik.values.cooperativaTransporteId || ''}
+              onChange={formik.handleChange}
+              error={formik.touched.cooperativaTransporteId && Boolean(formik.errors.cooperativaTransporteId)}
+              helperText={formik.touched.cooperativaTransporteId && formik.errors.cooperativaTransporteId}
+              required
+            >
+              {cooperativas.map((coop) => (
+                <MenuItem key={coop.id} value={coop.id}>{coop.nombre}</MenuItem>
+              ))}
+            </TextField>
           </Stack>
         </DialogContent>
         <DialogActions>

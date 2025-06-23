@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -43,6 +43,9 @@ export default function CooperativaForm({
   initialValues,
   title,
 }: CooperativaFormProps) {
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
   const stableInitialValues = useMemo(() => ({
     nombre: initialValues?.nombre || '',
     ruc: initialValues?.ruc || '',
@@ -54,12 +57,24 @@ export default function CooperativaForm({
     colorSecundario: /^#[0-9A-Fa-f]{6}$/.test(initialValues?.colorSecundario || '') ? initialValues?.colorSecundario : '#000000',
   }), [initialValues]);
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && !file.type.startsWith('image/')) {
+      alert('El logo debe ser una imagen válida (PNG, JPG, JPEG, etc.)');
+      setLogoFile(null);
+      setLogoPreview(null);
+      return;
+    }
+    setLogoFile(file || null);
+    setLogoPreview(file ? URL.createObjectURL(file) : null);
+  };
+
   const formik = useFormik({
     initialValues: stableInitialValues,
     enableReinitialize: true,
     validationSchema,
     onSubmit: async (values) => {
-      await onSubmit(values);
+      await onSubmit({ ...values, logo: logoFile });
       onClose();
     },
   });
@@ -155,6 +170,16 @@ export default function CooperativaForm({
                   inputProps={{ style: { padding: 0, width: 40, height: 40 } }}
                 />
               </Box>
+            </Box>
+            <Box display="flex" flexDirection="column" alignItems="flex-start" gap={1}>
+              <Typography variant="body2">Logo (opcional)</Typography>
+              <Button variant="outlined" component="label">
+                Seleccionar Logo
+                <input type="file" accept="image/*" hidden onChange={handleLogoChange} />
+              </Button>
+              {logoPreview && (
+                <img src={logoPreview} alt="Logo preview" style={{ width: 80, height: 80, objectFit: 'contain', borderRadius: 8, marginTop: 8, border: '1px solid #ccc' }} />
+              )}
             </Box>
           </Stack>
         </DialogContent>

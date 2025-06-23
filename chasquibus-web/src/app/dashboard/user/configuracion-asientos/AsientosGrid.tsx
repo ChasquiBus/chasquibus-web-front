@@ -9,6 +9,8 @@ interface AsientosGridProps {
   bus: Bus;
   posiciones: PosicionAsiento[];
   onChange: (posiciones: PosicionAsiento[]) => void;
+  onAddRow: () => void;
+  template: string;
 }
 
 const tipos = [
@@ -83,13 +85,13 @@ const validarPosiciones = (posiciones: PosicionAsiento[], bus: Bus): { valido: b
   return { valido: true };
 };
 
-export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGridProps) {
+export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, template }: AsientosGridProps) {
   const [selected, setSelected] = useState<PosicionAsiento | null>(null);
   const [editDialog, setEditDialog] = useState(false);
   const [editData, setEditData] = useState<Partial<PosicionAsiento>>({});
   const [piso, setPiso] = useState(1);
   const [addDialog, setAddDialog] = useState(false);
-  const [addData, setAddData] = useState<Partial<PosicionAsiento>>({ fila: 1, columna: 1, piso: 1, tipoAsiento: 'NORMAL', precio: '0.00' });
+  const [addData, setAddData] = useState<Partial<PosicionAsiento>>({ fila: 1, columna: 1, piso: 1, tipoAsiento: 'NORMAL', precio: '0.00', numeroAsiento: 1 });
   const [error, setError] = useState<string | null>(null);
   // Selección múltiple
   const [multiSelect, setMultiSelect] = useState<PosicionAsiento[]>([]);
@@ -141,7 +143,7 @@ export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGrid
   };
 
   const handleAddAsiento = () => {
-    if (!addData.fila || !addData.columna || !addData.piso || !addData.tipoAsiento || !addData.precio) {
+    if (!addData.fila || !addData.columna || !addData.piso || !addData.tipoAsiento || !addData.precio || !addData.numeroAsiento) {
       setError('Todos los campos son obligatorios');
       return;
     }
@@ -153,20 +155,40 @@ export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGrid
       return;
     }
 
-    // No permitir duplicados
+    // No permitir duplicados de posición o número de asiento
     if (posiciones.some(a => a.fila === addData.fila && a.columna === addData.columna && a.piso === addData.piso)) {
       setError('Ya existe un asiento en esta posición');
       return;
     }
 
+    if (posiciones.some(a => a.numeroAsiento === addData.numeroAsiento)) {
+      setError('El número de asiento ya existe');
+      return;
+    }
+
     onChange([...posiciones, addData as PosicionAsiento]);
     setAddDialog(false);
-    setAddData({ fila: 1, columna: 1, piso: piso, tipoAsiento: 'NORMAL', precio: '0.00' });
+    setAddData({ fila: 1, columna: 1, piso: piso, tipoAsiento: 'NORMAL', precio: '0.00', numeroAsiento: 1 });
     setError(null);
   };
 
   const handleDelete = (asiento: PosicionAsiento) => {
-    const nuevas = posiciones.filter(a => !(a.fila === asiento.fila && a.columna === asiento.columna && a.piso === asiento.piso));
+    // Filtrar para eliminar el asiento seleccionado
+    let nuevas = posiciones.filter(a => !(a.fila === asiento.fila && a.columna === asiento.columna && a.piso === asiento.piso));
+
+    // Comprobar si la fila del asiento eliminado (en el mismo piso) ha quedado vacía
+    const isRowEmpty = !nuevas.some(p => p.piso === asiento.piso && p.fila === asiento.fila);
+
+    if (isRowEmpty) {
+      // Si la fila está vacía, decrementar el número de fila de todas las filas posteriores en el mismo piso
+      nuevas = nuevas.map(p => {
+        if (p.piso === asiento.piso && p.fila > asiento.fila) {
+          return { ...p, fila: p.fila - 1 };
+        }
+        return p;
+      });
+    }
+
     onChange(nuevas);
   };
 
@@ -249,10 +271,16 @@ export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGrid
         </Box>
       )}
       <Typography variant="h6" sx={{ mb: 2, color: '#000' }}>Asientos Piso {piso}</Typography>
-      <Button variant="outlined" color="success" sx={{ mb: 2 }} onClick={() => { setAddDialog(true); setAddData(d => ({ ...d, piso: piso })); }}>
-        + Agregar Asiento
+      <Button
+        variant="outlined"
+        color="success"
+        sx={{ mb: 2 }}
+        onClick={onAddRow}
+        disabled={template !== 'plantilla1' && template !== 'plantilla2' && template !== 'plantilla3'}
+      >
+        + Agregar Fila
       </Button>
-      <Box sx={{ width: 420, maxWidth: '100%', overflowX: 'auto', mx: 'auto', mt: 2 }}>
+      <Box sx={{ width: 'auto', maxWidth: '100%', overflowX: 'auto', mx: 'auto', mt: 2, display: 'inline-block' }}>
         <Box
           sx={{
             display: 'grid',
@@ -266,16 +294,32 @@ export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGrid
             boxShadow: 1,
           }}
         >
-          {[...Array(maxFila)].map((_, filaIdx) =>
-            [...Array(5)].map((_, colIdx) => {
-              const col = colIdx + 1;
-              if (col === 3) {
-                return <Box key={`f${filaIdx}c${colIdx}`} sx={{ width: 56, height: 56, background: 'transparent' }} />;
+          {[...Array(maxFila)].map((_, filaIdx) => {
+            const fila = filaIdx + 1;
+            const isLastRowOfTemplate1 = template === 'plantilla1' && piso === 1 && fila === maxFila;
+            const isFirstRowOfTemplate3 = template === 'plantilla3' && piso === 1 && fila === 1;
+            const isLastRowWith5Seats = fila === maxFila && asientosPiso.filter(a => a.fila === fila).length >= 5;
+            
+            // Si es la última fila y tiene 5 asientos, o es la plantilla 1, no hay pasillo.
+            const columnas = (isLastRowWith5Seats || isLastRowOfTemplate1) ? [1, 2, 3, 4, 5] : [1, 2, 0, 4, 5]; // 0 representa el pasillo
+
+            return columnas.map((col, colIdx) => {
+              if (col === 0) {
+                return <Box key={`f${fila}c-pasillo`} sx={{ width: 56, height: 56, background: 'transparent' }} />;
               }
-              const asiento = asientosPiso.find(a => a.fila === filaIdx + 1 && a.columna === col);
+              const asiento = asientosPiso.find(a => a.fila === fila && a.columna === col);
               const isSelected = asiento && multiSelect.some(sel => sel.fila === asiento.fila && sel.columna === asiento.columna && sel.piso === asiento.piso);
+
+              if (isLastRowOfTemplate1 && (col === 4 || col === 5)) {
+                return <Box key={`f${fila}c${col}`} sx={{ width: 56, height: 56, background: '#eeeeee', borderRadius: 2, border: '2px dashed #ccc' }} />;
+              }
+
+              if (isFirstRowOfTemplate3 && (col === 2 || col === 4)) {
+                return <Box key={`f${fila}c${col}`} sx={{ width: 56, height: 56, background: '#eeeeee', borderRadius: 2, border: '2px dashed #ccc' }} />;
+              }
+
               return asiento ? (
-                <Box key={`f${filaIdx}c${colIdx}`} sx={{ position: 'relative', width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box key={`f${fila}c${col}`} sx={{ position: 'relative', width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Button
                     variant="contained"
                     sx={{
@@ -299,12 +343,7 @@ export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGrid
                     }}
                     onDoubleClick={() => handleAsientoClick(asiento)}
                   >
-                    {asiento.fila}-{asiento.columna}
-                    <Chip
-                      label={asiento.tipoAsiento}
-                      size="small"
-                      sx={{ ml: 1, background: 'rgba(0,0,0,0.1)' }}
-                    />
+                    {asiento.numeroAsiento}
                   </Button>
                   <IconButton
                     size="small"
@@ -315,16 +354,48 @@ export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGrid
                   </IconButton>
                 </Box>
               ) : (
-                <Box key={`f${filaIdx}c${colIdx}`} sx={{ width: 56, height: 56, border: '2px solid #eee', borderRadius: 2, background: '#fafafa' }} />
+                <Box
+                  key={`f${fila}c${col}`}
+                  onClick={() => {
+                    const maxAsiento = posiciones.length > 0 ? Math.max(...posiciones.map(p => p.numeroAsiento)) : 0;
+                    setAddData({
+                      fila: fila,
+                      columna: col,
+                      piso: piso,
+                      tipoAsiento: 'NORMAL',
+                      precio: '0.00',
+                      numeroAsiento: maxAsiento + 1
+                    });
+                    setAddDialog(true);
+                  }}
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    border: '2px dashed #ccc',
+                    borderRadius: 2,
+                    background: '#fafafa',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      background: '#e9e9e9',
+                      borderColor: '#aaa'
+                    }
+                  }}
+                />
               );
-            })
-          )}
+            });
+          })}
         </Box>
       </Box>
       {/* Diálogo para editar asiento */}
       <Dialog open={editDialog} onClose={() => setEditDialog(false)}>
         <DialogTitle>Editar Asiento</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <TextField
+            label="Número de Asiento"
+            type="number"
+            value={editData.numeroAsiento || ''}
+            disabled
+          />
           <TextField
             label="Fila"
             type="number"
@@ -374,6 +445,13 @@ export default function AsientosGrid({ bus, posiciones, onChange }: AsientosGrid
       <Dialog open={addDialog} onClose={() => setAddDialog(false)}>
         <DialogTitle>Agregar Asiento</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <TextField
+            label="Número de Asiento"
+            type="number"
+            value={addData.numeroAsiento || ''}
+            onChange={e => setAddData(d => ({ ...d, numeroAsiento: Number(e.target.value) }))}
+            inputProps={{ min: 1 }}
+          />
           <TextField
             label="Fila"
             type="number"
