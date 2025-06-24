@@ -13,7 +13,6 @@ export default function Footer() {
       width: '100%',
       py: 2,
       px: 2,
-      mt: 6,
       textAlign: 'center',
       background: theme.palette.primary.main,
       borderTop: '1px solid #e0e0e0',

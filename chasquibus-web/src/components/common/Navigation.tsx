@@ -17,6 +17,7 @@ import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Box from '@mui/material/Box';
 import { useState, useEffect } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -35,6 +36,7 @@ import RoomIcon from '@mui/icons-material/Room';
 import AltRouteIcon from '@mui/icons-material/AltRoute';
 import GavelIcon from '@mui/icons-material/Gavel';
 import WorkIcon from '@mui/icons-material/Work';
+import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Usuarios': <PeopleIcon color="primary" />,
@@ -118,17 +120,23 @@ export default function Navigation({ role, menuOpen, setMenuOpen }: NavigationPr
         onClose={handleToggle}
         sx={{
           display: { xs: 'none', md: 'block' },
+          position: 'fixed',
+          top: 64,
+          left: 0,
+          height: 'calc(100vh - 64px - 56px)',
+          bottom: 56,
+          zIndex: 1200,
           '& .MuiDrawer-paper': {
-            position: isDesktop ? 'fixed' : 'absolute',
-            top: 67, // altura del header
-            bottom: 56, // altura del footer
-            height: 'auto',
+            position: 'relative',
             width: open ? 260 : 64,
             transition: 'width 0.3s',
             overflowX: 'hidden',
-            borderRadius: 3,
-            boxShadow: 3,
-            minHeight: 300,
+            overflowY: 'auto',
+            borderRadius: 0,
+            boxShadow: 'none',
+            height: '100%',
+            margin: 0,
+            padding: 0,
           },
         }}
       >
@@ -136,7 +144,7 @@ export default function Navigation({ role, menuOpen, setMenuOpen }: NavigationPr
         {isDesktop && (
           <Box sx={{ display: 'flex', justifyContent: open ? 'flex-end' : 'center', alignItems: 'center', p: 1 }}>
             <IconButton onClick={handleToggle} size="large" color="primary">
-              {open ? <ChevronLeftIcon /> : <MenuIcon />}
+              {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
             </IconButton>
           </Box>
         )}

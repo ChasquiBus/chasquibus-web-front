@@ -24,7 +24,6 @@ export const navigationByRole: RoleNavigation = {
   admin: [
     { label: 'Gestión de Usuarios', href: '/dashboard/admin/users' },
     { label: 'Gestión de Cooperativas', href: '/dashboard/admin/cooperatives' },
-    { label: 'Configuración General', href: '/dashboard/admin/settings' },
     { label: 'Cerrar Sesión', href: '/auth/login' },
   ],
   user: [
