@@ -14,6 +14,7 @@ interface Props {
 }
 
 export default function AdminCooperativasTable({ admins, onEdit, onDelete }: Props) {
+  const activos = admins.filter((admin) => admin.usuario.activo === true);
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -25,12 +26,11 @@ export default function AdminCooperativasTable({ admins, onEdit, onDelete }: Pro
             <TableCell>Apellido</TableCell>
             <TableCell>Cédula</TableCell>
             <TableCell>Teléfono</TableCell>
-            <TableCell>Activo</TableCell>
             <TableCell>Acciones</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {admins.map((admin) => (
+          {activos.map((admin) => (
             <TableRow key={admin.usuario.id}>
               <TableCell>{
                 (admin as any).cooperativaTransporte?.nombre || admin.cooperativaTransporteId
@@ -40,7 +40,6 @@ export default function AdminCooperativasTable({ admins, onEdit, onDelete }: Pro
               <TableCell>{admin.usuario.apellido}</TableCell>
               <TableCell>{admin.usuario.cedula}</TableCell>
               <TableCell>{admin.usuario.telefono}</TableCell>
-              <TableCell>{admin.usuario.activo ? 'Sí' : 'No'}</TableCell>
               <TableCell>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Tooltip title="Editar">

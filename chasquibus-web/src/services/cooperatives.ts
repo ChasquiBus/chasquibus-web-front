@@ -47,7 +47,7 @@ export const cooperativesService = {
 
   async update(id: number, data: UpdateCooperativaDto & { logo?: File }): Promise<Cooperativa> {
     const formData = new FormData();
-    formData.append('nombre', data.nombre);
+    if (data.nombre) formData.append('nombre', data.nombre);
     if (data.ruc) formData.append('ruc', data.ruc);
     if (data.colorPrimario) formData.append('colorPrimario', data.colorPrimario);
     if (data.colorSecundario) formData.append('colorSecundario', data.colorSecundario);
@@ -57,7 +57,7 @@ export const cooperativesService = {
     if (data.direccion) formData.append('direccion', data.direccion);
     if (data.logo) formData.append('logo', data.logo);
     const response = await fetch(`${API_URL}/cooperativas/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
       },

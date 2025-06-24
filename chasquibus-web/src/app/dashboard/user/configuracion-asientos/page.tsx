@@ -81,14 +81,14 @@ export default function ConfiguracionAsientosPage() {
     // Generar filas regulares de 4 asientos (2, pasillo, 2)
     while (numeroAsientoCounter <= regularSeatsCount) {
         const seatsToPlace = Math.min(4, regularSeatsCount - numeroAsientoCounter + 1);
-        if (seatsToPlace >= 1) newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter });
-        if (seatsToPlace >= 2) newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 1 });
-        if (seatsToPlace >= 3) newPosiciones.push({ fila, columna: 4, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 2 });
-        if (seatsToPlace >= 4) newPosiciones.push({ fila, columna: 5, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 3 });
+            if (seatsToPlace >= 1) newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter });
+            if (seatsToPlace >= 2) newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 1 });
+            if (seatsToPlace >= 3) newPosiciones.push({ fila, columna: 4, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 2 });
+            if (seatsToPlace >= 4) newPosiciones.push({ fila, columna: 5, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 3 });
         
-        numeroAsientoCounter += 4;
-        fila++;
-    }
+            numeroAsientoCounter += 4;
+            fila++;
+        }
 
     // Generar la última fila con 5 asientos
     const lastRowStartNumber = regularSeatsCount + 1;
@@ -230,12 +230,12 @@ export default function ConfiguracionAsientosPage() {
 
       // Lógica para agregar fila antes de la última
       if (selectedTemplate === 'plantilla1' || selectedTemplate === 'plantilla2' || selectedTemplate === 'plantilla3') {
-        const lastRow = pos.filter(p => p.fila === maxFila);
+      const lastRow = pos.filter(p => p.fila === maxFila);
         const seatsBeforeLastRow = pos.filter(p => p.fila < maxFila);
-
+      
         let currentSeatNumber = seatsBeforeLastRow.length > 0 ? Math.max(...seatsBeforeLastRow.map(p => p.numeroAsiento)) + 1 : 1;
-        const newRowFila = maxFila;
-
+      const newRowFila = maxFila;
+      
         // Agregar la nueva fila
         let newRowSeats: PosicionAsiento[] = [];
         if (selectedTemplate === 'plantilla2' || selectedTemplate === 'plantilla3') {
@@ -250,17 +250,17 @@ export default function ConfiguracionAsientosPage() {
             { fila: newRowFila, columna: 2, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
             { fila: newRowFila, columna: 4, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
             { fila: newRowFila, columna: 5, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
-          ];
+      ];
         }
 
         // Mover la última fila hacia abajo y re-numerar sus asientos
         const updatedLastRow = lastRow
           .sort((a, b) => a.columna - b.columna)
           .map(seat => ({
-            ...seat,
+        ...seat,
             fila: maxFila + 1,
             numeroAsiento: currentSeatNumber++,
-          }));
+      }));
 
         const finalPosiciones = [...seatsBeforeLastRow, ...newRowSeats, ...updatedLastRow];
         return finalPosiciones.sort((a, b) => a.numeroAsiento - b.numeroAsiento);

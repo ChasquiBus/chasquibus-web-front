@@ -14,6 +14,7 @@ import {
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { CreateCooperativaDto } from '@/types/cooperatives';
+import { validarRucEcuador, validarEmail, validarCelularEcuador, validarSitioWeb } from '@/lib/utils/validations';
 
 interface CooperativaFormProps {
   open: boolean;
@@ -24,16 +25,48 @@ interface CooperativaFormProps {
 }
 
 const validationSchema = Yup.object({
-  nombre: Yup.string().required('El nombre es obligatorio'),
+  nombre: Yup.string()
+    .max(100, 'Máximo 100 caracteres')
+    .required('El nombre es obligatorio'),
   ruc: Yup.string()
-    .matches(/^[0-9]{10,13}$/, 'El RUC debe tener entre 10 y 13 dígitos')
+    .max(20, 'Máximo 20 caracteres')
+    .required('El RUC es obligatorio')
+    .matches(/^\d{13}$/, 'El RUC debe tener exactamente 13 dígitos numéricos')
+    .test('ruc-ec-format', 'El RUC no tiene un formato válido para Ecuador', (value) => {
+      if (!value) return false;
+      return validarRucEcuador(value);
+    }),
+  email: Yup.string()
+    .max(100, 'Máximo 100 caracteres')
+    .email('El correo electrónico no tiene un formato válido')
+    .nullable()
+    .test('is-valid-or-empty', 'El correo electrónico no tiene un formato válido', (value) => {
+      if (!value) return true; // Permitir vacío
+      return validarEmail(value);
+    }),
+  telefono: Yup.string()
+    .max(20, 'Máximo 20 caracteres')
+    .nullable()
+    .test('is-valid-or-empty', 'El número debe tener 10 dígitos y empezar con 09', (value) => {
+      if (!value || value.length === 0) return true; // Permitir vacío
+      return validarCelularEcuador(value);
+    }),
+  direccion: Yup.string()
+    .max(255, 'Máximo 255 caracteres')
     .optional(),
-  email: Yup.string().email('Email inválido').optional(),
-  telefono: Yup.string().optional(),
-  direccion: Yup.string().optional(),
-  sitioWeb: Yup.string().url('URL inválida').optional(),
-  colorPrimario: Yup.string().optional(),
-  colorSecundario: Yup.string().optional(),
+  sitioWeb: Yup.string()
+    .max(255, 'Máximo 255 caracteres')
+    .nullable()
+    .test('is-valid-or-empty', 'El sitio web debe tener el formato https://www.ejemplo.com', (value) => {
+      if (!value || value.length === 0) return true;
+      return validarSitioWeb(value);
+    }),
+  colorPrimario: Yup.string()
+    .max(20, 'Máximo 20 caracteres')
+    .optional(),
+  colorSecundario: Yup.string()
+    .max(20, 'Máximo 20 caracteres')
+    .optional(),
 });
 
 export default function CooperativaForm({
@@ -74,119 +107,275 @@ export default function CooperativaForm({
     enableReinitialize: true,
     validationSchema,
     onSubmit: async (values) => {
-      await onSubmit({ ...values, logo: logoFile });
+      const data: any = { ...values };
+      if (logoFile) data.logo = logoFile;
+      Object.keys(data).forEach((key) => {
+        if (data[key] === '' || data[key] === undefined) delete data[key];
+      });
+      await onSubmit(data);
       onClose();
     },
   });
 
+  // Handler para solo permitir números y máximo 13 dígitos en RUC
+  const handleRucChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ''); // Solo números
+    if (value.length > 13) value = value.slice(0, 13);
+    formik.setFieldValue('ruc', value);
+  };
+
+  // Handler para solo permitir números y máximo 10 dígitos en teléfono
+  const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ''); // Solo números
+    if (value.length > 10) value = value.slice(0, 10);
+    formik.setFieldValue('telefono', value);
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{title}</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{
+      sx: {
+        borderRadius: 4,
+        background: '#f9fafb',
+      }
+    }}>
+      <DialogTitle sx={{ fontWeight: 700, fontSize: 26, pb: 0 }}>
+        {title}
+      </DialogTitle>
+      <Typography sx={{ px: 4, pt: 1, pb: 2, color: 'text.secondary', fontSize: 16 }}>
+        Ingresa los datos de la cooperativa. Los campos marcados con * son obligatorios.
+      </Typography>
       <form onSubmit={formik.handleSubmit}>
-        <DialogContent>
-          <Stack spacing={2}>
-            <TextField
-              fullWidth
-              id="nombre"
-              name="nombre"
-              label="Nombre"
-              value={formik.values.nombre}
-              onChange={formik.handleChange}
-              error={formik.touched.nombre && Boolean(formik.errors.nombre)}
-              helperText={formik.touched.nombre && formik.errors.nombre}
-            />
-            <TextField
-              fullWidth
-              id="ruc"
-              name="ruc"
-              label="RUC"
-              value={formik.values.ruc}
-              onChange={formik.handleChange}
-              error={formik.touched.ruc && Boolean(formik.errors.ruc)}
-              helperText={formik.touched.ruc && formik.errors.ruc}
-            />
-            <TextField
-              fullWidth
-              id="email"
-              name="email"
-              label="Email"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              helperText={formik.touched.email && formik.errors.email}
-            />
-            <TextField
-              fullWidth
-              id="telefono"
-              name="telefono"
-              label="Teléfono"
-              value={formik.values.telefono}
-              onChange={formik.handleChange}
-              error={formik.touched.telefono && Boolean(formik.errors.telefono)}
-              helperText={formik.touched.telefono && formik.errors.telefono}
-            />
-            <TextField
-              fullWidth
-              id="sitioWeb"
-              name="sitioWeb"
-              label="Sitio Web"
-              value={formik.values.sitioWeb}
-              onChange={formik.handleChange}
-              error={formik.touched.sitioWeb && Boolean(formik.errors.sitioWeb)}
-              helperText={formik.touched.sitioWeb && formik.errors.sitioWeb}
-            />
-            <TextField
-              fullWidth
-              id="direccion"
-              name="direccion"
-              label="Dirección"
-              value={formik.values.direccion}
-              onChange={formik.handleChange}
-              error={formik.touched.direccion && Boolean(formik.errors.direccion)}
-              helperText={formik.touched.direccion && formik.errors.direccion}
-            />
-            <Box display="flex" gap={4} alignItems="center" mt={1}>
-              <Box display="flex" flexDirection="column" alignItems="flex-start">
-                <Typography variant="body2" sx={{ mb: 0.5 }}>Color primario</Typography>
-                <TextField
-                  id="colorPrimario"
-                  name="colorPrimario"
-                  type="color"
-                  value={formik.values.colorPrimario || '#000000'}
-                  onChange={formik.handleChange}
-                  sx={{ width: 56, height: 56, p: 0, minWidth: 0 }}
-                  inputProps={{ style: { padding: 0, width: 40, height: 40 } }}
-                />
-              </Box>
-              <Box display="flex" flexDirection="column" alignItems="flex-start">
-                <Typography variant="body2" sx={{ mb: 0.5 }}>Color secundario</Typography>
-                <TextField
-                  id="colorSecundario"
-                  name="colorSecundario"
-                  type="color"
-                  value={formik.values.colorSecundario || '#000000'}
-                  onChange={formik.handleChange}
-                  sx={{ width: 56, height: 56, p: 0, minWidth: 0 }}
-                  inputProps={{ style: { padding: 0, width: 40, height: 40 } }}
-                />
-              </Box>
-            </Box>
-            <Box display="flex" flexDirection="column" alignItems="flex-start" gap={1}>
-              <Typography variant="body2">Logo (opcional)</Typography>
-              <Button variant="outlined" component="label">
-                Seleccionar Logo
-                <input type="file" accept="image/*" hidden onChange={handleLogoChange} />
-              </Button>
-              {logoPreview && (
-                <img src={logoPreview} alt="Logo preview" style={{ width: 80, height: 80, objectFit: 'contain', borderRadius: 8, marginTop: 8, border: '1px solid #ccc' }} />
-              )}
-            </Box>
-          </Stack>
+        <DialogContent sx={{ pt: 0, pb: 0 }}>
+          <Box sx={{
+            background: '#fff',
+            borderRadius: 3,
+            p: { xs: 2, md: 4 },
+            mt: 1,
+            mb: 2
+          }}>
+            <Grid container spacing={2} alignItems="flex-start">
+              {/* Primera columna */}
+              <Grid item xs={12} md={6}>
+                <Stack spacing={2.2}>
+                  <TextField
+                    fullWidth
+                    id="nombre"
+                    name="nombre"
+                    label="Nombre de la Cooperativa"
+                    placeholder="Ej: Cooperativa de Transportes Unidos"
+                    value={formik.values.nombre}
+                    onChange={formik.handleChange}
+                    error={formik.touched.nombre && Boolean(formik.errors.nombre)}
+                    helperText={formik.touched.nombre && formik.errors.nombre}
+                    size="medium"
+                  />
+                  <TextField
+                    fullWidth
+                    id="ruc"
+                    name="ruc"
+                    label="RUC"
+                    placeholder="Ej: 1724727225001"
+                    value={formik.values.ruc}
+                    onChange={handleRucChange}
+                    inputProps={{ maxLength: 13, inputMode: 'numeric', pattern: '[0-9]*' }}
+                    error={formik.touched.ruc && Boolean(formik.errors.ruc)}
+                    helperText={formik.touched.ruc && formik.errors.ruc}
+                    size="medium"
+                  />
+                  <TextField
+                    fullWidth
+                    id="email"
+                    name="email"
+                    label="Correo Electrónico"
+                    placeholder="Ej: contacto@cooperativa.com"
+                    value={formik.values.email}
+                    onChange={formik.handleChange}
+                    error={formik.touched.email && Boolean(formik.errors.email)}
+                    helperText={formik.touched.email && formik.errors.email}
+                    size="medium"
+                  />
+                  <TextField
+                    fullWidth
+                    id="telefono"
+                    name="telefono"
+                    label="Teléfono"
+                    placeholder="Ej: 0998765432"
+                    value={formik.values.telefono}
+                    onChange={handleTelefonoChange}
+                    inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }}
+                    error={formik.touched.telefono && Boolean(formik.errors.telefono)}
+                    helperText={formik.touched.telefono && formik.errors.telefono}
+                    size="medium"
+                  />
+                </Stack>
+              </Grid>
+
+              {/* Segunda columna */}
+              <Grid item xs={12} md={6}>
+                <Stack spacing={2.2}>
+                  <TextField
+                    fullWidth
+                    id="sitioWeb"
+                    name="sitioWeb"
+                    label="Sitio Web"
+                    placeholder="Ej: https://www.cooperativa.com"
+                    value={formik.values.sitioWeb}
+                    onChange={formik.handleChange}
+                    error={formik.touched.sitioWeb && Boolean(formik.errors.sitioWeb)}
+                    helperText={formik.touched.sitioWeb && formik.errors.sitioWeb}
+                    size="medium"
+                  />
+                  <TextField
+                    fullWidth
+                    id="direccion"
+                    name="direccion"
+                    label="Dirección"
+                    placeholder="Ej: Av. Principal 123, Lima"
+                    value={formik.values.direccion}
+                    onChange={formik.handleChange}
+                    error={formik.touched.direccion && Boolean(formik.errors.direccion)}
+                    helperText={formik.touched.direccion && formik.errors.direccion}
+                    size="medium"
+                  />
+                  {/* Colores */}
+                  <Box sx={{ width: '100%', mt: 0.5 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
+                      Colores de la Cooperativa
+                    </Typography>
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item xs={6}>
+                        <Box display="flex" flexDirection="column" alignItems="flex-start">
+                          <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
+                            Color Principal
+                          </Typography>
+                          <TextField
+                            id="colorPrimario"
+                            name="colorPrimario"
+                            type="color"
+                            value={formik.values.colorPrimario || '#000000'}
+                            onChange={formik.handleChange}
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              p: 0,
+                              minWidth: 0,
+                              borderRadius: 2,
+                              boxShadow: 1,
+                              background: '#f3f4f6',
+                              '& .MuiInputBase-root': {
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                background: '#fff',
+                              }
+                            }}
+                            inputProps={{
+                              style: {
+                                padding: 0,
+                                width: 48,
+                                height: 48,
+                                cursor: 'pointer',
+                                border: 'none',
+                                background: 'none',
+                              }
+                            }}
+                          />
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box display="flex" flexDirection="column" alignItems="flex-start">
+                          <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
+                            Color Secundario
+                          </Typography>
+                          <TextField
+                            id="colorSecundario"
+                            name="colorSecundario"
+                            type="color"
+                            value={formik.values.colorSecundario || '#000000'}
+                            onChange={formik.handleChange}
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              p: 0,
+                              minWidth: 0,
+                              borderRadius: 2,
+                              boxShadow: 1,
+                              background: '#f3f4f6',
+                              '& .MuiInputBase-root': {
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                background: '#fff',
+                              }
+                            }}
+                            inputProps={{
+                              style: {
+                                padding: 0,
+                                width: 48,
+                                height: 48,
+                                cursor: 'pointer',
+                                border: 'none',
+                                background: 'none',
+                              }
+                            }}
+                          />
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                  {/* Logo */}
+                  <Box sx={{ width: '100%', mt: 1 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
+                      Logo de la Cooperativa
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      sx={{
+                        width: '100%',
+                        py: 1.5,
+                        borderStyle: 'dashed',
+                        borderWidth: 2,
+                        borderRadius: 2,
+                        color: '#1976d2',
+                        background: '#f3f4f6',
+                        fontWeight: 500,
+                        letterSpacing: 1,
+                        '&:hover': {
+                          background: '#e3e6ea',
+                          borderColor: '#1976d2',
+                        }
+                      }}
+                    >
+                      {logoFile ? 'Cambiar Logo' : 'Seleccionar Logo (Opcional)'}
+                      <input type="file" accept="image/*" hidden onChange={handleLogoChange} />
+                    </Button>
+                    {logoPreview && (
+                      <Box sx={{ mt: 2, textAlign: 'center' }}>
+                        <img
+                          src={logoPreview}
+                          alt="Vista previa del logo"
+                          style={{
+                            width: 90,
+                            height: 90,
+                            objectFit: 'contain',
+                            borderRadius: 8,
+                            border: '2px solid #e0e0e0',
+                            backgroundColor: '#fafafa',
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Box>
+                </Stack>
+              </Grid>
+            </Grid>
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancelar</Button>
-          <Button type="submit" variant="contained" color="primary">
-            Guardar
+        <DialogActions sx={{ px: 4, pb: 3, justifyContent: 'flex-end', gap: 2 }}>
+          <Button onClick={onClose} variant="outlined" sx={{ minWidth: 140, fontWeight: 500 }}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="contained" color="primary" sx={{ minWidth: 180, fontWeight: 600 }}>
+            Guardar Cooperativa
           </Button>
         </DialogActions>
       </form>

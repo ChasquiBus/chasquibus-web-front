@@ -26,6 +26,7 @@ export default function CooperativasTable({
   onEdit,
   onDelete,
 }: CooperativasTableProps) {
+  const activas = cooperativas.filter((c) => c.activo !== false);
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -40,7 +41,7 @@ export default function CooperativasTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {cooperativas.map((cooperativa) => (
+          {activas.map((cooperativa) => (
             <TableRow key={cooperativa.id}>
               <TableCell>{cooperativa.nombre}</TableCell>
               <TableCell>{cooperativa.ruc}</TableCell>
