@@ -43,22 +43,22 @@ export default function Footer() {
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)' }}>
           {user?.cooperativaTransporte?.facebook && (
             <a href={user.cooperativaTransporte.facebook} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
-              <FacebookIcon sx={{ fontSize: 28, transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
+              <FacebookIcon sx={{ fontSize: 28,color: 'black', transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
             </a>
           )}
           {user?.cooperativaTransporte?.instagram && (
             <a href={user.cooperativaTransporte.instagram} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
-              <InstagramIcon sx={{ fontSize: 28, transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
+              <InstagramIcon sx={{ fontSize: 28,color: 'black', transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
             </a>
           )}
           {user?.cooperativaTransporte?.twitter && (
             <a href={user.cooperativaTransporte.twitter} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
-              <TwitterIcon sx={{ fontSize: 28, transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
+              <TwitterIcon sx={{ fontSize: 28,color: 'black', transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
             </a>
           )}
           {user?.cooperativaTransporte?.tiktok && (
             <a href={user.cooperativaTransporte.tiktok} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
-              <MusicNoteIcon sx={{ fontSize: 28, transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
+              <MusicNoteIcon sx={{ fontSize: 28,color: 'black', transition: 'color 0.2s', '&:hover': { color: 'white' } }} />
             </a>
           )}
         </Box>
