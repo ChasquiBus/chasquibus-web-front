@@ -47,6 +47,7 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
           <TableHead>
             <TableRow>
               <TableCell>Imagen</TableCell>
+              <TableCell>Placa</TableCell>
               <TableCell>Número de Bus</TableCell>
               {/* <TableCell>Cooperativa</TableCell> */}
               <TableCell>Marca Chasis</TableCell>
@@ -58,9 +59,14 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
           </TableHead>
           <TableBody>
             {busesActivos.map((bus) => {
-              const imageUrl = bus.imagen
-                ? `${API_URL}/${bus.imagen.startsWith('upload/buses/') ? bus.imagen : `upload/buses/${bus.imagen}`}`
-                : undefined;
+              let imageUrl = undefined;
+              if (bus.imagen) {
+                if (/^https?:\/\//.test(bus.imagen)) {
+                  imageUrl = bus.imagen;
+                } else {
+                  imageUrl = `https://ufhaisffqpipuafnitry.supabase.co/storage/v1/object/public/almacenamiento/imagenes/buses/${bus.imagen}`;
+                }
+              }
               return (
                 <TableRow key={bus.id}>
                   <TableCell>
@@ -87,11 +93,16 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
                       </Typography>
                     )}
                   </TableCell>
+                  <TableCell>{bus.placa}</TableCell>
                   <TableCell>{bus.numero_bus}</TableCell>
                   {/* <TableCell>{bus.cooperativa_id}</TableCell> */}
                   <TableCell>{bus.marca_chasis || '-'}</TableCell>
                   <TableCell>{bus.marca_carroceria || '-'}</TableCell>
-                  <TableCell>{bus.total_asientos}</TableCell>
+                  <TableCell>
+                    {bus.piso_doble
+                      ? Number(bus.total_asientos || 0) + Number(bus.total_asientos_piso2 || 0)
+                      : bus.total_asientos}
+                  </TableCell>
                   <TableCell>
                     <Chip
                       label={bus.piso_doble ? 'Piso Doble' : 'Piso Simple'}

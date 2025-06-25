@@ -5,7 +5,6 @@ export interface PosicionAsiento {
   columna: number;
   piso: number;
   tipoAsiento: 'NORMAL' | 'VIP';
-  precio: string;
   numeroAsiento: number;
 }
 
@@ -52,28 +51,72 @@ export const configuracionAsientosService = {
   },
 
   async create(dto: CreateConfiguracionAsientosDto): Promise<ConfiguracionAsientos> {
+    // Filtrar solo los campos requeridos por el backend en cada posición
+    const posiciones = dto.posiciones.map(p => ({
+      fila: p.fila,
+      columna: p.columna,
+      piso: p.piso,
+      tipoAsiento: p.tipoAsiento,
+      numeroAsiento: p.numeroAsiento,
+      ocupado: false // siempre enviar false por defecto
+    }));
+    const body = JSON.stringify({ busId: dto.busId, posiciones });
     const response = await fetch(`${API_URL}/configuracion-asientos`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dto),
+      body,
     });
-    if (!response.ok) throw new Error('Error al crear la configuración de asientos');
+    if (!response.ok) {
+      let errorMsg = 'Error al crear la configuración de asientos';
+      try {
+        const data = await response.json();
+        if (data && data.message) {
+          errorMsg = Array.isArray(data.message) ? data.message.join(' ') : data.message;
+        } else if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        }
+      } catch {}
+      throw new Error(errorMsg);
+    }
     return response.json();
   },
 
   async update(id: number, dto: UpdateConfiguracionAsientosDto): Promise<ConfiguracionAsientos> {
+    // Filtrar solo los campos requeridos por el backend en cada posición
+    let bodyObj: any = {};
+    if (dto.posiciones) {
+      bodyObj.posiciones = dto.posiciones.map(p => ({
+        fila: p.fila,
+        columna: p.columna,
+        piso: p.piso,
+        tipoAsiento: p.tipoAsiento,
+        numeroAsiento: p.numeroAsiento,
+        ocupado: false // siempre enviar false por defecto
+      }));
+    }
     const response = await fetch(`${API_URL}/configuracion-asientos/${id}`, {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dto),
+      body: JSON.stringify(bodyObj),
     });
-    if (!response.ok) throw new Error('Error al actualizar la configuración de asientos');
+    if (!response.ok) {
+      let errorMsg = 'Error al actualizar la configuración de asientos';
+      try {
+        const data = await response.json();
+        if (data && data.message) {
+          errorMsg = Array.isArray(data.message) ? data.message.join(' ') : data.message;
+        } else if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        }
+      } catch {}
+      throw new Error(errorMsg);
+    }
     return response.json();
   },
 
