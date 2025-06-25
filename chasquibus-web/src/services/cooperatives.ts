@@ -34,6 +34,10 @@ export const cooperativesService = {
     if (data.telefono) formData.append('telefono', data.telefono);
     if (data.direccion) formData.append('direccion', data.direccion);
     if (data.logo) formData.append('logo', data.logo);
+    if (data.facebook) formData.append('facebook', data.facebook);
+    if (data.instagram) formData.append('instagram', data.instagram);
+    if (data.twitter) formData.append('twitter', data.twitter);
+    if (data.tiktok) formData.append('tiktok', data.tiktok);
     const response = await fetch(`${API_URL}/cooperativas`, {
       method: 'POST',
       headers: {
@@ -47,7 +51,7 @@ export const cooperativesService = {
 
   async update(id: number, data: UpdateCooperativaDto & { logo?: File }): Promise<Cooperativa> {
     const formData = new FormData();
-    formData.append('nombre', data.nombre);
+    if (data.nombre) formData.append('nombre', data.nombre);
     if (data.ruc) formData.append('ruc', data.ruc);
     if (data.colorPrimario) formData.append('colorPrimario', data.colorPrimario);
     if (data.colorSecundario) formData.append('colorSecundario', data.colorSecundario);
@@ -56,8 +60,12 @@ export const cooperativesService = {
     if (data.telefono) formData.append('telefono', data.telefono);
     if (data.direccion) formData.append('direccion', data.direccion);
     if (data.logo) formData.append('logo', data.logo);
+    if (data.facebook) formData.append('facebook', data.facebook);
+    if (data.instagram) formData.append('instagram', data.instagram);
+    if (data.twitter) formData.append('twitter', data.twitter);
+    if (data.tiktok) formData.append('tiktok', data.tiktok);
     const response = await fetch(`${API_URL}/cooperativas/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
       },

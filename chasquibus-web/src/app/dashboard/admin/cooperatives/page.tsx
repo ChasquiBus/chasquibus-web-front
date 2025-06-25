@@ -14,6 +14,10 @@ import { Cooperativa, CreateCooperativaDto } from '@/types/cooperatives';
 import { cooperativesService } from '@/services/cooperatives';
 import CooperativasTable from '@/components/cooperatives/CooperativasTable';
 import CooperativaForm from '@/components/cooperatives/CooperativaForm';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
 export default function AdminCooperativesPage() {
   const [cooperativas, setCooperativas] = useState<Cooperativa[]>([]);
@@ -31,6 +35,7 @@ export default function AdminCooperativesPage() {
     message: '',
     severity: 'success',
   });
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
 
   const loadCooperativas = async () => {
     try {
@@ -87,9 +92,13 @@ export default function AdminCooperativesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Está seguro de eliminar esta cooperativa?')) return;
+    setConfirmDialog({ open: true, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDialog.id) return;
     try {
-      await cooperativesService.delete(id);
+      await cooperativesService.delete(confirmDialog.id);
       setSnackbar({
         open: true,
         message: 'Cooperativa eliminada exitosamente',
@@ -103,6 +112,7 @@ export default function AdminCooperativesPage() {
         severity: 'error',
       });
     }
+    setConfirmDialog({ open: false, id: null });
   };
 
   const handleOpenForm = (cooperativa?: Cooperativa) => {
@@ -186,6 +196,17 @@ export default function AdminCooperativesPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, id: null })}>
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          ¿Está seguro de que desea eliminar esta cooperativa? Esta acción la ocultará de la lista.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialog({ open: false, id: null })} color="inherit">Cancelar</Button>
+          <Button onClick={confirmDelete} color="error" variant="contained">Eliminar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 } 

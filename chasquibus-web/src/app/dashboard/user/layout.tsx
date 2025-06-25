@@ -25,7 +25,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ minHeight: '100vh', background: '#f4f6fa', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ minHeight: '100vh', background: 'white', display: 'flex', flexDirection: 'column', p: 0, m: 0, boxShadow: 'none', border: 'none', overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
         <Header />
         <Box sx={{ display: 'flex', flex: 1, maxWidth: '100vw', mx: 0, mt: 4, gap: 0, width: '100%', transition: 'all 0.3s' }}>
           {/* Botón para abrir el menú en mobile y desktop */}
@@ -38,7 +38,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           <Box sx={{ minWidth: { xs: 0, md: menuOpen ? 260 : 64 }, maxWidth: { xs: 0, md: menuOpen ? 260 : 64 }, p: 0, borderRadius: 0, height: 'fit-content', display: { xs: 'none', md: 'block' }, transition: 'all 0.3s' }}>
             <Navigation role="user" menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
           </Box>
-          <Box sx={{ flex: 1, p: 3, background: 'white', borderRadius: 3, boxShadow: 2, ml: { xs: 0, md: 0 }, transition: 'all 0.3s' }}>
+          <Box sx={{ flex: 1, p: 0, background: 'white', borderRadius: 0, boxShadow: 'none', ml: { xs: 0, md: 0 }, transition: 'all 0.3s', minHeight: 'calc(100vh - 64px - 40px)' }}>
             {children}
           </Box>
         </Box>

@@ -97,17 +97,17 @@ export default function LoginPage() {
         </Typography>
       </Box>
       {/* Columna Derecha (Formulario) */}
-      <Box
-        sx={{
+        <Box
+          sx={{
           flex: { xs: 'unset', md: '0 0 50%' },
           width: { xs: '100%', md: '50vw' },
           minHeight: '100vh',
           minWidth: { xs: '100%', md: 420 },
           maxWidth: 700,
           background: { xs: 'rgba(255,255,255,0.95)', md: '#fff' },
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           justifyContent: "center",
           p: 0,
           boxShadow: { xs: 0, md: 4 },
