@@ -317,11 +317,21 @@ export default function ConfiguracionAsientosPage() {
         }
       }
 
+      // --- TRANSFORMACIÓN PARA EL BACKEND ---
+      const posicionesParaBackend = posiciones.map(p => ({
+        fila: p.fila,
+        columna: p.columna,
+        piso: p.piso,
+        tipoAsiento: p.tipoAsiento,
+        numeroAsiento: p.numeroAsiento,
+        ocupado: false // por defecto
+      }));
+
       if (config) {
-        await configuracionAsientosService.update(config.id, { posiciones });
+        await configuracionAsientosService.update(config.id, { posiciones: posicionesParaBackend });
         setSnackbar({open: true, message: 'Configuración actualizada correctamente', severity: 'success'});
       } else {
-        await configuracionAsientosService.create({ busId: selectedBus.id, posiciones });
+        await configuracionAsientosService.create({ busId: selectedBus.id, posiciones: posicionesParaBackend });
         setSnackbar({open: true, message: 'Configuración creada correctamente', severity: 'success'});
       }
       // Recargar config

@@ -45,11 +45,15 @@ export default function Header() {
   // Determinar logo cooperativa
   let logoUrl = '/images/logochaqui.jpg';
   if (user?.cooperativaTransporte?.logo) {
-    logoUrl = `${BACKEND_URL}/upload/cooperativas/${user.cooperativaTransporte.logo}`;
+    if (/^https?:\/\//.test(user.cooperativaTransporte.logo)) {
+      logoUrl = user.cooperativaTransporte.logo;
+    } else {
+      logoUrl = `${BACKEND_URL}/upload/cooperativas/${user.cooperativaTransporte.logo}`;
+    }
   }
 
   return (
-    <AppBar position="static" color="default" elevation={2} sx={{ background: theme.palette.primary.main, color: theme.palette.getContrastText(theme.palette.primary.main) }}>
+    <AppBar position="static" color="default" elevation={0} sx={{ background: theme.palette.primary.main, color: theme.palette.getContrastText(theme.palette.primary.main), boxShadow: 'none', border: 'none', m: 0, p: 0 }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Logo y nombre */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

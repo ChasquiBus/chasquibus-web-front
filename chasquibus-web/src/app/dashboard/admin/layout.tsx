@@ -9,7 +9,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [menuOpen, setMenuOpen] = useState(true);
 
   return (
-    <Box sx={{ minHeight: '100vh', background: '#f4f6fa', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', background: '#f4f6fa', display: 'flex', flexDirection: 'column', overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
       <Header />
       {/* Área central: Navigation + contenido, ocupa todo el espacio entre header y footer */}
       <Box sx={{ display: 'flex', flex: 1, minHeight: 0, height: '100%', background: 'white' }}>

@@ -42,6 +42,7 @@ const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Usuarios': <PeopleIcon color="primary" />,
   'Gestión de Cooperativas': <BusinessIcon color="primary" />,
   'Configuración General': <SettingsIcon color="primary" />,
+  'Configuración': <SettingsIcon color="primary" />,
   'Cerrar Sesión': <LogoutIcon color="error" />,
   'Gestión de Buses': <DirectionsBusIcon color="primary" />,
   'Gestión de Frecuencias': <ScheduleIcon color="primary" />,
@@ -137,6 +138,11 @@ export default function Navigation({ role, menuOpen, setMenuOpen }: NavigationPr
             height: '100%',
             margin: 0,
             padding: 0,
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            '&::-webkit-scrollbar': {
+              display: 'none',
+            },
           },
         }}
       >

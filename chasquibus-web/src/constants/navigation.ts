@@ -9,6 +9,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import WorkIcon from '@mui/icons-material/Work';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AirlineSeatLegroomNormalIcon from '@mui/icons-material/AirlineSeatLegroomNormal';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export interface NavigationItem {
   label: string;
@@ -36,6 +37,7 @@ export const navigationByRole: RoleNavigation = {
     { label: 'Resolución', href: '/dashboard/user/resolucion', icon: 'Gavel' },
     { label: 'Gestión Oficinistas', href: '/dashboard/user/oficinistas', icon: 'Work' },
     { label: 'Hoja de Ruta', href: '/dashboard/user/route-sheet', icon: 'Assignment' },
+    { label: 'Configuración', href: '/dashboard/user/configuracion', icon: 'Settings' },
     { label: 'Cerrar Sesión', href: '/auth/login', icon: 'Logout' },
   ],
   office: [

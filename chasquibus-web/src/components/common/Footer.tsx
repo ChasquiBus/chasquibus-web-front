@@ -15,7 +15,7 @@ export default function Footer() {
       px: 2,
       textAlign: 'center',
       background: theme.palette.primary.main,
-      borderTop: '1px solid #e0e0e0',
+      borderTop: 'none',
       fontSize: '0.95rem',
       color: theme.palette.getContrastText(theme.palette.primary.main),
       letterSpacing: 1,

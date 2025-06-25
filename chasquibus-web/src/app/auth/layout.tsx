@@ -25,7 +25,10 @@ export default function AuthLayout({
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {children}
+      <div style={{ minHeight: '100vh', overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <style>{`body::-webkit-scrollbar, html::-webkit-scrollbar { display: none !important; }`}</style>
+        {children}
+      </div>
     </ThemeProvider>
   );
 } 
