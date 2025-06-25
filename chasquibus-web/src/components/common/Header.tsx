@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -27,6 +27,26 @@ export default function Header() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const theme = useTheme();
+
+  // Estado para la fecha y hora
+  const [date, setDate] = useState<string>("");
+  const [time, setTime] = useState<string>("");
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const dateOptions: Intl.DateTimeFormatOptions = {
+        year: 'numeric', month: 'long', day: '2-digit',
+      };
+      const timeOptions: Intl.DateTimeFormatOptions = {
+        hour: '2-digit', minute: '2-digit', hour12: false
+      };
+      setDate(now.toLocaleDateString('es-EC', dateOptions));
+      setTime(now.toLocaleTimeString('es-EC', timeOptions));
+    };
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -77,11 +97,16 @@ export default function Header() {
               {user.name}
             </Typography>
             <Avatar
-              sx={{ bgcolor: 'primary.main', cursor: 'pointer', width: 40, height: 40, fontWeight: 700, fontSize: 18 }}
+              sx={{ bgcolor: 'black', cursor: 'pointer', width: 40, height: 40, fontWeight: 700, fontSize: 18 }}
               onClick={handleAvatarClick}
             >
               {getInitials(user.name)}
             </Avatar>
+            {/* Fecha y hora en dos líneas debajo de las iniciales */}
+            <Box sx={{ ml: 2, color: '#111', fontWeight: 500, fontSize: 15, letterSpacing: 1, minWidth: 120, textAlign: 'left', lineHeight: 1.2 }}>
+              <div>{date}</div>
+              <div style={{ fontSize: 17, fontWeight: 700 }}>{time}</div>
+            </Box>
             <Menu
               anchorEl={anchorEl}
               open={open}

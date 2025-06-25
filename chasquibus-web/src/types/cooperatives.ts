@@ -13,6 +13,10 @@ export interface Cooperativa {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  tiktok?: string;
 }
 
 export interface CreateCooperativaDto {
@@ -25,6 +29,10 @@ export interface CreateCooperativaDto {
   email?: string;
   telefono?: string;
   direccion?: string;
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  tiktok?: string;
 }
 
 export interface UpdateCooperativaDto extends CreateCooperativaDto {} 

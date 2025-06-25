@@ -29,6 +29,19 @@ export default function RootLayout({
     <html lang="en"
       style={{ height: '100%', overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
+      <head>
+        <style>{`
+          body.modal-open, html.modal-open {
+            overflow: hidden !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+          }
+          body.modal-open::-webkit-scrollbar,
+          html.modal-open::-webkit-scrollbar {
+            display: none !important;
+          }
+        `}</style>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ height: '100%', overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}

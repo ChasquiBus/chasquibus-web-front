@@ -34,6 +34,10 @@ export const cooperativesService = {
     if (data.telefono) formData.append('telefono', data.telefono);
     if (data.direccion) formData.append('direccion', data.direccion);
     if (data.logo) formData.append('logo', data.logo);
+    if (data.facebook) formData.append('facebook', data.facebook);
+    if (data.instagram) formData.append('instagram', data.instagram);
+    if (data.twitter) formData.append('twitter', data.twitter);
+    if (data.tiktok) formData.append('tiktok', data.tiktok);
     const response = await fetch(`${API_URL}/cooperativas`, {
       method: 'POST',
       headers: {
@@ -56,6 +60,10 @@ export const cooperativesService = {
     if (data.telefono) formData.append('telefono', data.telefono);
     if (data.direccion) formData.append('direccion', data.direccion);
     if (data.logo) formData.append('logo', data.logo);
+    if (data.facebook) formData.append('facebook', data.facebook);
+    if (data.instagram) formData.append('instagram', data.instagram);
+    if (data.twitter) formData.append('twitter', data.twitter);
+    if (data.tiktok) formData.append('tiktok', data.tiktok);
     const response = await fetch(`${API_URL}/cooperativas/${id}`, {
       method: 'PATCH',
       headers: {
