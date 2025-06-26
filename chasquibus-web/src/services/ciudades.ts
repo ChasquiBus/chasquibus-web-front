@@ -30,6 +30,15 @@ export async function getCiudades(): Promise<Ciudad[]> {
   return res.data as Ciudad[];
 }
 
+export async function getCiudadById(id: number): Promise<Ciudad> {
+  const res = await axios.get(`${API_URL}/ciudades/${id}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+    },
+  });
+  return res.data as Ciudad;
+}
+
 export async function createCiudad(data: CreateCiudadDto): Promise<Ciudad> {
   const res = await axios.post(`${API_URL}/ciudades`, data, {
     headers: {

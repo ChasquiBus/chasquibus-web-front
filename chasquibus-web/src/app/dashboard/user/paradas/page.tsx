@@ -48,10 +48,9 @@ const ParadasPage: React.FC = () => {
   };
 
   const cargarCiudades = async () => {
-    if (!cooperativaId) return;
     try {
       const data = await getCiudades();
-      setCiudades(data.filter((c: any) => c.cooperativaId === cooperativaId));
+      setCiudades(data);
     } catch (e) {
       setCiudades([]);
     }
@@ -63,7 +62,7 @@ const ParadasPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cooperativaId]);
 
-  const handleAgregarParada = async (data: { ciudadId: number; nombreParada: string; direccion: string; esTerminal: boolean; cooperativaId: number }) => {
+  const handleAgregarParada = async (data: { nombreParada: string; ciudadId: number; direccion?: string; esTerminal: boolean }) => {
     try {
       await createParada(data);
       mostrarMensaje('Parada creada exitosamente', 'success');
@@ -82,8 +81,8 @@ const ParadasPage: React.FC = () => {
     if (!data.id) return;
     try {
       await updateParada(data.id, {
-        ciudadId: data.ciudadId,
         nombreParada: data.nombreParada,
+        ciudadId: data.ciudadId,
         direccion: data.direccion,
         esTerminal: data.esTerminal,
       });
@@ -129,7 +128,7 @@ const ParadasPage: React.FC = () => {
       <Typography variant="h6" sx={{ color: '#111', fontWeight: 500, mb: 2 }}>
         Agregar Parada
       </Typography>
-      <ParadasForm onSubmit={handleAgregarParada} cooperativaId={cooperativaId} ciudades={ciudades} />
+      <ParadasForm onSubmit={handleAgregarParada} ciudades={ciudades} />
       {loading ? (
         <div>Cargando paradas...</div>
       ) : (

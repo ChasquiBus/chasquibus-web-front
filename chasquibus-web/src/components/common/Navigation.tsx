@@ -50,7 +50,6 @@ const iconMap: Record<string, React.ReactNode> = {
   'Hoja de Ruta': <AssignmentIcon color="primary" />,
   'Gestión de Choferes': <GroupIcon color="primary" />,
   'Configuración Asientos': <AirlineSeatLegroomNormalIcon color="primary" />,
-  'Gestión de Ciudades': <LocationCityIcon color="primary" />,
   'Gestión de Paradas': <RoomIcon color="primary" />,
   'Gestión de Rutas': <AltRouteIcon color="primary" />,
   'Resolución': <GavelIcon color="primary" />,

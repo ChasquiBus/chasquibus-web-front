@@ -83,10 +83,15 @@ export default function UserBusesPage() {
         severity: 'success',
       });
       fetchBuses();
-    } catch (err) {
+    } catch (err: any) {
+      let mensaje = '';
+      if (err && err.message) {
+        mensaje = err.message;
+      }
+      if (!mensaje) mensaje = 'Error al crear el bus';
       setSnackbar({
         open: true,
-        message: 'Error al crear el bus',
+        message: mensaje,
         severity: 'error',
       });
     }
@@ -110,10 +115,15 @@ export default function UserBusesPage() {
         severity: 'success',
       });
       fetchBuses();
-    } catch (err) {
+    } catch (err: any) {
+      let mensaje = '';
+      if (err && err.message) {
+        mensaje = err.message;
+      }
+      if (!mensaje) mensaje = 'Error al actualizar el bus';
       setSnackbar({
         open: true,
-        message: 'Error al actualizar el bus',
+        message: mensaje,
         severity: 'error',
       });
     }

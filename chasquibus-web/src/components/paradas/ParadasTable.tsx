@@ -16,11 +16,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 export interface Parada {
   id: number;
-  ciudadId: number;
   nombreParada: string;
-  direccion: string;
+  ciudadId: number;
+  direccion?: string;
   esTerminal: boolean;
-  ciudad?: { provincia: string; ciudad: string } | null;
+  ciudad?: { ciudad: string } | null;
 }
 
 interface ParadasTableProps {
@@ -35,7 +35,6 @@ const ParadasTable: React.FC<ParadasTableProps> = ({ paradas, onEdit, onDelete }
       <Table sx={{ minWidth: 650 }} aria-label="tabla paradas">
         <TableHead>
           <TableRow>
-            <TableCell><b>ID</b></TableCell>
             <TableCell><b>Ciudad</b></TableCell>
             <TableCell><b>Nombre de Parada</b></TableCell>
             <TableCell><b>Dirección</b></TableCell>
@@ -46,7 +45,7 @@ const ParadasTable: React.FC<ParadasTableProps> = ({ paradas, onEdit, onDelete }
         <TableBody>
           {paradas.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} align="center">
+              <TableCell colSpan={5} align="center">
                 <Typography variant="subtitle1" color="textSecondary" sx={{ py: 3 }}>
                   No hay paradas registradas.
                 </Typography>
@@ -55,8 +54,7 @@ const ParadasTable: React.FC<ParadasTableProps> = ({ paradas, onEdit, onDelete }
           ) : (
             paradas.map((parada) => (
               <TableRow key={parada.id}>
-                <TableCell sx={{ color: '#000' }}>{parada.id}</TableCell>
-                <TableCell sx={{ color: '#000' }}>{parada.ciudad ? `${parada.ciudad.provincia} - ${parada.ciudad.ciudad}` : parada.ciudadId}</TableCell>
+                <TableCell sx={{ color: '#000' }}>{parada.ciudad?.ciudad || ''}</TableCell>
                 <TableCell sx={{ color: '#000' }}>{parada.nombreParada}</TableCell>
                 <TableCell sx={{ color: '#000' }}>{parada.direccion}</TableCell>
                 <TableCell sx={{ color: '#000' }}>{parada.esTerminal ? 'Sí' : 'No'}</TableCell>

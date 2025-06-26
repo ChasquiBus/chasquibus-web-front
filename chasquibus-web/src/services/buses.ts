@@ -39,85 +39,70 @@ export const busesService = {
   },
 
   async create(data: CreateBusDto, imagen?: File): Promise<Bus> {
-    if (!imagen) {
-      // Mostrar en consola el JSON enviado
-      console.log('JSON enviado al backend (create):', data);
-      const response = await fetch(`${API_URL}/buses`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Error al crear el bus');
-      return response.json();
-    } else {
-      // Si hay imagen, usar FormData y enviar la imagen como archivo
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, value);
-        }
-      });
-      formData.append('imagen', imagen); // Solo archivo, nunca string/base64
-      // Mostrar en consola el FormData enviado
-      const debugData: any = {};
-      formData.forEach((value, key) => {
-        debugData[key] = value;
-      });
-      console.log('FormData enviado al backend (create):', debugData);
-      const response = await fetch(`${API_URL}/buses`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: formData,
-      });
-      if (!response.ok) throw new Error('Error al crear el bus');
-      return response.json();
+    // Siempre usar FormData
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value as any);
+      }
+    });
+    if (imagen) {
+      formData.append('imagen', imagen);
     }
+    // Mostrar en consola el FormData enviado
+    const debugData: any = {};
+    formData.forEach((value, key) => {
+      debugData[key] = value;
+    });
+    console.log('FormData enviado al backend (create):', debugData);
+    const response = await fetch(`${API_URL}/buses`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      let errorMsg = 'Error al crear el bus';
+      try {
+        const data = await response.json();
+        if (data && data.message) {
+          errorMsg = Array.isArray(data.message) ? data.message.join(' ') : data.message;
+        } else if (typeof data === 'string') {
+          errorMsg = data;
+        }
+      } catch {}
+      throw new Error(errorMsg);
+    }
+    return response.json();
   },
 
   async update(id: number, data: UpdateBusDto, imagen?: File): Promise<Bus> {
-    if (!imagen) {
-      // Mostrar en consola el JSON enviado
-      console.log('JSON enviado al backend (update):', data);
-      const response = await fetch(`${API_URL}/buses/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Error al actualizar el bus');
-      return response.json();
-    } else {
-      // Si hay imagen, usar FormData y enviar la imagen como archivo
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, value);
-        }
-      });
-      formData.append('imagen', imagen); // Solo archivo, nunca string/base64
-      // Mostrar en consola el FormData enviado
-      const debugData: any = {};
-      formData.forEach((value, key) => {
-        debugData[key] = value;
-      });
-      console.log('FormData enviado al backend (update):', debugData);
-      const response = await fetch(`${API_URL}/buses/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: formData,
-      });
-      if (!response.ok) throw new Error('Error al actualizar el bus');
-      return response.json();
+    // Siempre usar FormData
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value as any);
+      }
+    });
+    if (imagen) {
+      formData.append('imagen', imagen);
     }
+    // Mostrar en consola el FormData enviado
+    const debugData: any = {};
+    formData.forEach((value, key) => {
+      debugData[key] = value;
+    });
+    console.log('FormData enviado al backend (update):', debugData);
+    const response = await fetch(`${API_URL}/buses/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      },
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Error al actualizar el bus');
+    return response.json();
   },
 
   async delete(id: number): Promise<void> {

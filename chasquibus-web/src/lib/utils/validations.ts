@@ -48,4 +48,39 @@ export function validarCedulaEcuador(cedula: string): boolean {
   }
   const verificador = (10 - (total % 10)) % 10;
   return verificador === parseInt(cedula[9], 10);
+}
+
+// Validar placa ecuatoriana (formato AAA-1234)
+export function validarPlacaEcuador(placa: string): boolean {
+  // Debe tener exactamente 8 caracteres, patrón AAA-1234
+  return /^[A-Z]{3}-\d{4}$/.test(placa);
+}
+
+// Formatear la placa en tiempo real
+export function formatearPlacaEcuador(input: string): string {
+  // Eliminar todo lo que no sea letra o número
+  let limpio = input.replace(/[^A-Za-z0-9]/g, '');
+  // Solo permitir letras en las primeras 3 posiciones, convertir a mayúsculas
+  let letras = limpio.slice(0, 3).replace(/[^A-Za-z]/g, '').toUpperCase();
+  // Solo permitir números en las siguientes 4 posiciones
+  let numeros = limpio.slice(3).replace(/[^0-9]/g, '');
+  if (letras.length > 3) letras = letras.slice(0, 3);
+  if (numeros.length > 4) numeros = numeros.slice(0, 4);
+  let resultado = letras;
+  if (letras.length === 3) {
+    resultado += '-';
+  }
+  resultado += numeros;
+  return resultado;
+}
+
+// Validar total de asientos piso 1 (solo números del 1 al 50)
+export function validarTotalAsientosPiso1(valor: string | number): boolean {
+  const n = Number(valor);
+  return Number.isInteger(n) && n >= 1 && n <= 50;
+}
+
+// Validar suma de asientos para bus de dos pisos (máximo 80)
+export function validarSumaAsientosPisos(piso1: number, piso2: number): boolean {
+  return piso1 + piso2 <= 80;
 } 

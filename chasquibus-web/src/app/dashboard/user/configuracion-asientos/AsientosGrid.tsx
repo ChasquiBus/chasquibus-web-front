@@ -9,7 +9,7 @@ interface AsientosGridProps {
   bus: Bus;
   posiciones: PosicionAsiento[];
   onChange: (posiciones: PosicionAsiento[]) => void;
-  onAddRow: () => void;
+  onAddRow: (piso: number) => void;
   template: string;
 }
 
@@ -66,22 +66,6 @@ const validarPosiciones = (posiciones: PosicionAsiento[], bus: Bus): { valido: b
     };
   }
 
-  // Validar precios VIP > NORMAL
-  const preciosVIP = asientosPiso2.filter(p => p.tipoAsiento === 'VIP').map(p => parseFloat(p.precio));
-  const preciosNORMAL = asientosPiso2.filter(p => p.tipoAsiento === 'NORMAL').map(p => parseFloat(p.precio));
-
-  if (preciosVIP.length > 0 && preciosNORMAL.length > 0) {
-    const minPrecioVIP = Math.min(...preciosVIP);
-    const maxPrecioNORMAL = Math.max(...preciosNORMAL);
-
-    if (minPrecioVIP <= maxPrecioNORMAL) {
-      return {
-        valido: false,
-        mensaje: 'Los precios de los asientos VIP deben ser mayores que los asientos NORMAL'
-      };
-    }
-  }
-
   return { valido: true };
 };
 
@@ -91,12 +75,12 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
   const [editData, setEditData] = useState<Partial<PosicionAsiento>>({});
   const [piso, setPiso] = useState(1);
   const [addDialog, setAddDialog] = useState(false);
-  const [addData, setAddData] = useState<Partial<PosicionAsiento>>({ fila: 1, columna: 1, piso: 1, tipoAsiento: 'NORMAL', precio: '0.00', numeroAsiento: 1 });
+  const [addData, setAddData] = useState<Partial<PosicionAsiento>>({ fila: 1, columna: 1, piso: 1, tipoAsiento: 'NORMAL', numeroAsiento: 1 });
   const [error, setError] = useState<string | null>(null);
   // Selección múltiple
   const [multiSelect, setMultiSelect] = useState<PosicionAsiento[]>([]);
   const [massEditDialog, setMassEditDialog] = useState(false);
-  const [massEditData, setMassEditData] = useState<{precio: string, tipoAsiento: 'NORMAL'|'VIP'}>({precio: '', tipoAsiento: 'NORMAL'});
+  const [massEditData, setMassEditData] = useState<{tipoAsiento: 'NORMAL'|'VIP'}>({tipoAsiento: 'NORMAL'});
 
   // Filtrar asientos por piso
   const asientosPiso = posiciones.filter(p => p.piso === piso);
@@ -106,70 +90,88 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
   const maxCol = 5; // Siempre 5 columnas para la visualización del grid (con pasillo)
 
   const handleAsientoClick = (asiento: PosicionAsiento) => {
+    // Solo permitir edición si es piso 2
+    if (asiento.piso !== 2) return;
     setSelected(asiento);
     setEditData({ ...asiento });
     setEditDialog(true);
   };
 
-  const handleEditSave = () => {
-    if (!editData.fila || !editData.columna || !editData.piso || !editData.tipoAsiento || !editData.precio) {
-      setError('Todos los campos son obligatorios');
-      return;
+  const handleEditSave = async () => {
+    try {
+      if (!editData.fila || !editData.columna || !editData.piso || !editData.tipoAsiento) {
+        setError('Todos los campos son obligatorios');
+        return;
+      }
+      const nuevas = posiciones.map(a =>
+        a.fila === selected?.fila && a.columna === selected?.columna && a.piso === selected?.piso
+          ? { ...editData } as PosicionAsiento
+          : a
+      );
+      const validacion = validarPosiciones(nuevas, bus);
+      if (!validacion.valido) {
+        setError(validacion.mensaje || 'Error de validación');
+        return;
+      }
+      onChange(nuevas);
+      setEditDialog(false);
+      setSelected(null);
+      setError(null);
+    } catch (err: any) {
+      let mensaje = '';
+      if (err && err.response && err.response.data) {
+        const data = err.response.data;
+        if (data.message) {
+          mensaje = Array.isArray(data.message) ? data.message.join(' ') : data.message;
+        } else if (typeof data.error === 'string') {
+          mensaje = data.error;
+        }
+      } else if (err && err.message) {
+        mensaje = err.message;
+      } else if (typeof err === 'string') {
+        mensaje = err;
+      }
+      if (!mensaje) mensaje = 'Error al editar el asiento. Por favor, intente nuevamente.';
+      setError(mensaje);
     }
-
-    // Validar precio con 2 decimales
-    const precio = parseFloat(editData.precio);
-    if (isNaN(precio) || precio < 0 || !/^\d+(\.\d{1,2})?$/.test(editData.precio)) {
-      setError('El precio debe ser un número positivo con máximo 2 decimales');
-      return;
-    }
-
-    const nuevas = posiciones.map(a =>
-      a.fila === selected?.fila && a.columna === selected?.columna && a.piso === selected?.piso
-        ? { ...editData } as PosicionAsiento
-        : a
-    );
-
-    const validacion = validarPosiciones(nuevas, bus);
-    if (!validacion.valido) {
-      setError(validacion.mensaje || 'Error de validación');
-      return;
-    }
-
-    onChange(nuevas);
-    setEditDialog(false);
-    setSelected(null);
-    setError(null);
   };
 
-  const handleAddAsiento = () => {
-    if (!addData.fila || !addData.columna || !addData.piso || !addData.tipoAsiento || !addData.precio || !addData.numeroAsiento) {
-      setError('Todos los campos son obligatorios');
-      return;
+  const handleAddAsiento = async () => {
+    try {
+      if (!addData.fila || !addData.columna || !addData.piso || !addData.tipoAsiento || !addData.numeroAsiento) {
+        setError('Todos los campos son obligatorios');
+        return;
+      }
+      // No permitir duplicados de posición o número de asiento
+      if (posiciones.some(a => a.fila === addData.fila && a.columna === addData.columna && a.piso === addData.piso)) {
+        setError('Ya existe un asiento en esta posición');
+        return;
+      }
+      if (posiciones.some(a => a.numeroAsiento === addData.numeroAsiento)) {
+        setError('El número de asiento ya existe');
+        return;
+      }
+      onChange([...posiciones, addData as PosicionAsiento]);
+      setAddDialog(false);
+      setAddData({ fila: 1, columna: 1, piso: piso, tipoAsiento: 'NORMAL', numeroAsiento: 1 });
+      setError(null);
+    } catch (err: any) {
+      let mensaje = '';
+      if (err && err.response && err.response.data) {
+        const data = err.response.data;
+        if (data.message) {
+          mensaje = Array.isArray(data.message) ? data.message.join(' ') : data.message;
+        } else if (typeof data.error === 'string') {
+          mensaje = data.error;
+        }
+      } else if (err && err.message) {
+        mensaje = err.message;
+      } else if (typeof err === 'string') {
+        mensaje = err;
+      }
+      if (!mensaje) mensaje = 'Error al agregar el asiento. Por favor, intente nuevamente.';
+      setError(mensaje);
     }
-
-    // Validar precio con 2 decimales
-    const precio = parseFloat(addData.precio);
-    if (isNaN(precio) || precio < 0 || !/^\d+(\.\d{1,2})?$/.test(addData.precio)) {
-      setError('El precio debe ser un número positivo con máximo 2 decimales');
-      return;
-    }
-
-    // No permitir duplicados de posición o número de asiento
-    if (posiciones.some(a => a.fila === addData.fila && a.columna === addData.columna && a.piso === addData.piso)) {
-      setError('Ya existe un asiento en esta posición');
-      return;
-    }
-
-    if (posiciones.some(a => a.numeroAsiento === addData.numeroAsiento)) {
-      setError('El número de asiento ya existe');
-      return;
-    }
-
-    onChange([...posiciones, addData as PosicionAsiento]);
-    setAddDialog(false);
-    setAddData({ fila: 1, columna: 1, piso: piso, tipoAsiento: 'NORMAL', precio: '0.00', numeroAsiento: 1 });
-    setError(null);
   };
 
   const handleDelete = (asiento: PosicionAsiento) => {
@@ -203,16 +205,11 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
   };
 
   const handleMassEdit = () => {
-    if (!massEditData.precio || isNaN(Number(massEditData.precio)) || Number(massEditData.precio) < 0) {
-      setError('El precio debe ser un número positivo');
-      return;
-    }
     // Solo permitir cambiar tipoAsiento en piso 2
     const nuevas = posiciones.map(a => {
       if (multiSelect.some(sel => sel.fila === a.fila && sel.columna === a.columna && sel.piso === a.piso)) {
         return {
           ...a,
-          precio: massEditData.precio,
           tipoAsiento: (a.piso === 2 ? massEditData.tipoAsiento : 'NORMAL')
         };
       }
@@ -237,7 +234,7 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
           <Typography variant="body2" sx={{ fontWeight: 700 }}>
             {multiSelect.length} asientos seleccionados
           </Typography>
-          <Button variant="contained" color="primary" onClick={() => { setMassEditDialog(true); setMassEditData({precio: '', tipoAsiento: 'NORMAL'}); }}>
+          <Button variant="contained" color="primary" onClick={() => { setMassEditDialog(true); setMassEditData({tipoAsiento: 'NORMAL'}); }}>
             Editar seleccionados
           </Button>
           <Button variant="outlined" color="error" onClick={() => setMultiSelect([])}>
@@ -275,7 +272,7 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
         variant="outlined"
         color="success"
         sx={{ mb: 2 }}
-        onClick={onAddRow}
+        onClick={() => onAddRow(piso)}
         disabled={template !== 'plantilla1' && template !== 'plantilla2' && template !== 'plantilla3'}
       >
         + Agregar Fila
@@ -363,7 +360,6 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
                       columna: col,
                       piso: piso,
                       tipoAsiento: 'NORMAL',
-                      precio: '0.00',
                       numeroAsiento: maxAsiento + 1
                     });
                     setAddDialog(true);
@@ -387,60 +383,27 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
         </Box>
       </Box>
       {/* Diálogo para editar asiento */}
-      <Dialog open={editDialog} onClose={() => setEditDialog(false)}>
-        <DialogTitle>Editar Asiento</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <TextField
-            label="Número de Asiento"
-            type="number"
-            value={editData.numeroAsiento || ''}
-            disabled
-          />
-          <TextField
-            label="Fila"
-            type="number"
-            value={editData.fila || ''}
-            onChange={e => setEditData(d => ({ ...d, fila: Number(e.target.value) }))}
-            disabled
-          />
-          <TextField
-            label="Columna"
-            type="number"
-            value={editData.columna || ''}
-            onChange={e => setEditData(d => ({ ...d, columna: Number(e.target.value) }))}
-            disabled
-          />
-          <TextField
-            label="Piso"
-            type="number"
-            value={editData.piso || ''}
-            onChange={e => setEditData(d => ({ ...d, piso: Number(e.target.value) }))}
-            disabled
-          />
-          <TextField
-            select
-            label="Tipo de Asiento"
-            value={editData.tipoAsiento || ''}
-            onChange={e => setEditData(d => ({ ...d, tipoAsiento: e.target.value as 'NORMAL' | 'VIP' }))}
-            disabled={editData.piso === 1}
-          >
-            {tipos.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            label="Precio"
-            type="number"
-            value={editData.precio || ''}
-            onChange={e => setEditData(d => ({ ...d, precio: e.target.value }))}
-            inputProps={{ step: '0.01', min: 0 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialog(false)}>Cancelar</Button>
-          <Button onClick={handleEditSave} variant="contained">Guardar</Button>
-        </DialogActions>
-      </Dialog>
+      {selected && selected.piso === 2 && (
+        <Dialog open={editDialog} onClose={() => setEditDialog(false)}>
+          <DialogTitle>Editar Asiento</DialogTitle>
+          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            <TextField
+              select
+              label="Tipo de Asiento"
+              value={editData.tipoAsiento || ''}
+              onChange={e => setEditData(d => ({ ...d, tipoAsiento: e.target.value as 'NORMAL' | 'VIP' }))}
+            >
+              {tipos.map(opt => (
+                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+              ))}
+            </TextField>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditDialog(false)}>Cancelar</Button>
+            <Button onClick={handleEditSave} variant="contained">Guardar</Button>
+          </DialogActions>
+        </Dialog>
+      )}
       {/* Diálogo para agregar asiento */}
       <Dialog open={addDialog} onClose={() => setAddDialog(false)}>
         <DialogTitle>Agregar Asiento</DialogTitle>
@@ -449,49 +412,16 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
             label="Número de Asiento"
             type="number"
             value={addData.numeroAsiento || ''}
-            onChange={e => setAddData(d => ({ ...d, numeroAsiento: Number(e.target.value) }))}
-            inputProps={{ min: 1 }}
-          />
-          <TextField
-            label="Fila"
-            type="number"
-            value={addData.fila || ''}
-            onChange={e => setAddData(d => ({ ...d, fila: Number(e.target.value) }))}
-            inputProps={{ min: 1 }}
-          />
-          <TextField
-            label="Columna"
-            type="number"
-            value={addData.columna || ''}
-            onChange={e => setAddData(d => ({ ...d, columna: Number(e.target.value) }))}
-            inputProps={{ min: 1 }}
-          />
-          <TextField
-            label="Piso"
-            type="number"
-            value={addData.piso || piso}
-            onChange={e => setAddData(d => ({ ...d, piso: Number(e.target.value) }))}
-            inputProps={{ min: 1, max: bus.piso_doble ? 2 : 1 }}
-            disabled={!bus.piso_doble}
+            disabled
           />
           <TextField
             select
             label="Tipo de Asiento"
             value={addData.tipoAsiento || 'NORMAL'}
-            onChange={e => setAddData(d => ({ ...d, tipoAsiento: e.target.value as 'NORMAL' | 'VIP' }))}
-            disabled={addData.piso === 1 || (!addData.piso && piso === 1)}
+            disabled
           >
-            {tipos.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-            ))}
+            <MenuItem value={addData.tipoAsiento || 'NORMAL'}>{addData.tipoAsiento === 'VIP' ? 'VIP' : 'Normal'}</MenuItem>
           </TextField>
-          <TextField
-            label="Precio"
-            type="number"
-            value={addData.precio || ''}
-            onChange={e => setAddData(d => ({ ...d, precio: e.target.value }))}
-            inputProps={{ step: '0.01', min: 0 }}
-          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddDialog(false)}>Cancelar</Button>
@@ -502,13 +432,6 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
       <Dialog open={massEditDialog} onClose={() => setMassEditDialog(false)}>
         <DialogTitle>Editar asientos seleccionados</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <TextField
-            label="Precio"
-            type="number"
-            value={massEditData.precio}
-            onChange={e => setMassEditData(d => ({ ...d, precio: e.target.value }))}
-            inputProps={{ step: '0.01', min: 0 }}
-          />
           {piso === 2 && (
             <TextField
               select
@@ -529,4 +452,4 @@ export default function AsientosGrid({ bus, posiciones, onChange, onAddRow, temp
       </Dialog>
     </Box>
   );
-} 
+}

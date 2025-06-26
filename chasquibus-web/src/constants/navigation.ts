@@ -31,7 +31,6 @@ export const navigationByRole: RoleNavigation = {
     { label: 'Gestión de Buses', href: '/dashboard/user/buses', icon: 'DirectionsBus' },
     { label: 'Configuración Asientos', href: '/dashboard/user/configuracion-asientos', icon: 'AirlineSeatLegroomNormal' },
     { label: 'Gestión de Choferes', href: '/dashboard/user/choferes', icon: 'Group' },
-    { label: 'Gestión de Ciudades', href: '/dashboard/user/ciudades', icon: 'LocationCity' },
     { label: 'Gestión de Paradas', href: '/dashboard/user/paradas', icon: 'Room' },
     { label: 'Gestión de Rutas', href: '/dashboard/user/rutas', icon: 'AltRoute' },
     { label: 'Resolución', href: '/dashboard/user/resolucion', icon: 'Gavel' },

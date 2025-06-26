@@ -14,7 +14,8 @@ export const choferesService = {
   },
 
   createChofer: async (choferData: CreateChoferDto, token: string): Promise<Chofer> => {
-    const response = await axios.post(`${API_URL}/choferes`, choferData, {
+    const { cooperativaTransporteId, ...rest } = choferData;
+    const response = await axios.post(`${API_URL}/choferes`, rest, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',

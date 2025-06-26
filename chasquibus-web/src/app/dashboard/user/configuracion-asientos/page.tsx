@@ -48,10 +48,10 @@ export default function ConfiguracionAsientosPage() {
     // Generar filas regulares de 4 asientos (de izquierda a derecha)
     while (numeroAsientoCounter <= regularSeatsCount) {
         const seatsToPlace = Math.min(4, regularSeatsCount - numeroAsientoCounter + 1);
-        if (seatsToPlace >= 1) newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter });
-        if (seatsToPlace >= 2) newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 1 });
-        if (seatsToPlace >= 3) newPosiciones.push({ fila, columna: 4, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 2 });
-        if (seatsToPlace >= 4) newPosiciones.push({ fila, columna: 5, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 3 });
+        if (seatsToPlace >= 1) newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter });
+        if (seatsToPlace >= 2) newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter + 1 });
+        if (seatsToPlace >= 3) newPosiciones.push({ fila, columna: 4, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter + 2 });
+        if (seatsToPlace >= 4) newPosiciones.push({ fila, columna: 5, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter + 3 });
         
         numeroAsientoCounter += 4;
         fila++;
@@ -60,9 +60,9 @@ export default function ConfiguracionAsientosPage() {
     // Generar la última fila con 3 asientos a la izquierda
     if (regularSeatsCount >= 0) { // Siempre generar la última fila si hay asientos.
         const lastRowStartNumber = regularSeatsCount + 1;
-        newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: lastRowStartNumber });
-        newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: lastRowStartNumber + 1 });
-        newPosiciones.push({ fila, columna: 3, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: lastRowStartNumber + 2 });
+        newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: lastRowStartNumber });
+        newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: lastRowStartNumber + 1 });
+        newPosiciones.push({ fila, columna: 3, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: lastRowStartNumber + 2 });
     }
     
     return newPosiciones.sort((a, b) => a.numeroAsiento - b.numeroAsiento).filter(a => a.numeroAsiento <= numSeats);
@@ -81,10 +81,10 @@ export default function ConfiguracionAsientosPage() {
     // Generar filas regulares de 4 asientos (2, pasillo, 2)
     while (numeroAsientoCounter <= regularSeatsCount) {
         const seatsToPlace = Math.min(4, regularSeatsCount - numeroAsientoCounter + 1);
-            if (seatsToPlace >= 1) newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter });
-            if (seatsToPlace >= 2) newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 1 });
-            if (seatsToPlace >= 3) newPosiciones.push({ fila, columna: 4, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 2 });
-            if (seatsToPlace >= 4) newPosiciones.push({ fila, columna: 5, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: numeroAsientoCounter + 3 });
+            if (seatsToPlace >= 1) newPosiciones.push({ fila, columna: 1, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter });
+            if (seatsToPlace >= 2) newPosiciones.push({ fila, columna: 2, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter + 1 });
+            if (seatsToPlace >= 3) newPosiciones.push({ fila, columna: 4, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter + 2 });
+            if (seatsToPlace >= 4) newPosiciones.push({ fila, columna: 5, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: numeroAsientoCounter + 3 });
         
             numeroAsientoCounter += 4;
             fila++;
@@ -95,7 +95,7 @@ export default function ConfiguracionAsientosPage() {
     for (let i = 0; i < seatsInLastRow; i++) {
         // Asegurarse de no exceder el número total de asientos
         if (lastRowStartNumber + i <= numSeats) {
-            newPosiciones.push({ fila, columna: i + 1, piso: pisoNum, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: lastRowStartNumber + i });
+            newPosiciones.push({ fila, columna: i + 1, piso: pisoNum, tipoAsiento: 'NORMAL', numeroAsiento: lastRowStartNumber + i });
         }
     }
     
@@ -139,7 +139,6 @@ export default function ConfiguracionAsientosPage() {
           columna: col,
           piso: pisoNum,
           tipoAsiento: 'NORMAL',
-          precio: '0',
           numeroAsiento: numeroAsientoCounter++,
         });
         count++;
@@ -147,6 +146,28 @@ export default function ConfiguracionAsientosPage() {
       if (count > numSeats) break;
     }
     return newPosiciones;
+  };
+
+  // Plantilla especial para el piso 2 de buses de dos pisos
+  const generateSeatsPiso2DosPisos = (numSeats: number): PosicionAsiento[] => {
+    const posiciones: PosicionAsiento[] = [];
+    if (numSeats <= 0) return posiciones;
+    const asientosPorFila = 4; // 2 a la izquierda, 2 a la derecha
+    const filas = Math.ceil(numSeats / asientosPorFila);
+    let numeroAsiento = 1;
+    for (let fila = 1; fila <= filas; fila++) {
+      for (let col of [1, 2, 4, 5]) { // columna 3 es pasillo
+        if (numeroAsiento > numSeats) break;
+        posiciones.push({
+          fila,
+          columna: col,
+          piso: 2,
+          tipoAsiento: 'NORMAL',
+          numeroAsiento: numeroAsiento++,
+        });
+      }
+    }
+    return posiciones;
   };
 
   useEffect(() => {
@@ -164,20 +185,30 @@ export default function ConfiguracionAsientosPage() {
           } else {
             // No hay configuración, generar una basada en la plantilla actual
             let generatedPosiciones: PosicionAsiento[] = [];
-            if (selectedTemplate === 'plantilla1') {
+            if (!selectedBus.piso_doble) {
+              // Bus de un solo piso: usar la plantilla seleccionada
+              if (selectedTemplate === 'plantilla1') {
                 generatedPosiciones = generateSeatsPlantilla1(selectedBus.total_asientos, 1);
-            } else if (selectedTemplate === 'plantilla2') {
+              } else if (selectedTemplate === 'plantilla2') {
                 generatedPosiciones = generateSeatsPlantilla2(selectedBus.total_asientos, 1);
-            } else if (selectedTemplate === 'plantilla3') {
+              } else if (selectedTemplate === 'plantilla3') {
                 generatedPosiciones = generateSeatsPlantilla3(selectedBus.total_asientos, 1);
+              }
             } else {
-                if (selectedBus.piso_doble) {
-                    const piso1Seats = generateSeats(selectedBus.total_asientos, 1);
-                    const nextSeatNumber = piso1Seats.length > 0 ? Math.max(...piso1Seats.map(p => p.numeroAsiento)) + 1 : 1;
-                    generatedPosiciones = [...piso1Seats, ...generateSeats(selectedBus.total_asientos_piso2 || 0, 2, nextSeatNumber)];
-                } else {
-                    generatedPosiciones = generateSeats(selectedBus.total_asientos, 1);
-                }
+              // Bus de dos pisos: primer piso usa la plantilla seleccionada, segundo piso usa plantilla especial
+              let piso1: PosicionAsiento[] = [];
+              if (selectedTemplate === 'plantilla1') {
+                piso1 = generateSeatsPlantilla1(selectedBus.total_asientos, 1);
+              } else if (selectedTemplate === 'plantilla2') {
+                piso1 = generateSeatsPlantilla2(selectedBus.total_asientos, 1);
+              } else if (selectedTemplate === 'plantilla3') {
+                piso1 = generateSeatsPlantilla3(selectedBus.total_asientos, 1);
+              }
+              // Piso 2 usa plantilla especial
+              const piso2 = generateSeatsPiso2DosPisos(selectedBus.total_asientos_piso2 || 0);
+              let nextNum = piso1.length > 0 ? Math.max(...piso1.map(p => p.numeroAsiento)) + 1 : 1;
+              const piso2Renumerado = piso2.map((a, idx) => ({ ...a, numeroAsiento: nextNum + idx }));
+              generatedPosiciones = [...piso1, ...piso2Renumerado];
             }
             setPosiciones(generatedPosiciones);
           }
@@ -197,76 +228,94 @@ export default function ConfiguracionAsientosPage() {
   useEffect(() => {
     if (selectedBus && !config) {
       let generatedPosiciones: PosicionAsiento[] = [];
-      
-      if (selectedTemplate === 'plantilla1') {
-        // Lógica para Plantilla 1: Bus de un solo piso
-        generatedPosiciones = generateSeatsPlantilla1(selectedBus.total_asientos, 1);
-      } else if (selectedTemplate === 'plantilla2') {
-        generatedPosiciones = generateSeatsPlantilla2(selectedBus.total_asientos, 1);
-      } else if (selectedTemplate === 'plantilla3') {
-        generatedPosiciones = generateSeatsPlantilla3(selectedBus.total_asientos, 1);
-      } else {
-        // Lógica por defecto o para otras plantillas
-        if (selectedBus.piso_doble) {
-          const piso1Seats = generateSeats(selectedBus.total_asientos, 1);
-          const nextSeatNumber = piso1Seats.length > 0 ? Math.max(...piso1Seats.map(p => p.numeroAsiento)) + 1 : 1;
-          const piso2Seats = generateSeats(selectedBus.total_asientos_piso2 || 0, 2, nextSeatNumber);
-          generatedPosiciones = [...piso1Seats, ...piso2Seats];
-        } else {
-          generatedPosiciones = generateSeats(selectedBus.total_asientos, 1);
+      if (!selectedBus.piso_doble) {
+        // Bus de un solo piso: usar la plantilla seleccionada
+        if (selectedTemplate === 'plantilla1') {
+          generatedPosiciones = generateSeatsPlantilla1(selectedBus.total_asientos, 1);
+        } else if (selectedTemplate === 'plantilla2') {
+          generatedPosiciones = generateSeatsPlantilla2(selectedBus.total_asientos, 1);
+        } else if (selectedTemplate === 'plantilla3') {
+          generatedPosiciones = generateSeatsPlantilla3(selectedBus.total_asientos, 1);
         }
+      } else {
+        // Bus de dos pisos: primer piso usa la plantilla seleccionada, segundo piso usa plantilla especial
+        let piso1: PosicionAsiento[] = [];
+        if (selectedTemplate === 'plantilla1') {
+          piso1 = generateSeatsPlantilla1(selectedBus.total_asientos, 1);
+        } else if (selectedTemplate === 'plantilla2') {
+          piso1 = generateSeatsPlantilla2(selectedBus.total_asientos, 1);
+        } else if (selectedTemplate === 'plantilla3') {
+          piso1 = generateSeatsPlantilla3(selectedBus.total_asientos, 1);
+        }
+        // Piso 2 usa plantilla especial
+        const piso2 = generateSeatsPiso2DosPisos(selectedBus.total_asientos_piso2 || 0);
+        let nextNum = piso1.length > 0 ? Math.max(...piso1.map(p => p.numeroAsiento)) + 1 : 1;
+        const piso2Renumerado = piso2.map((a, idx) => ({ ...a, numeroAsiento: nextNum + idx }));
+        generatedPosiciones = [...piso1, ...piso2Renumerado];
       }
       setPosiciones(generatedPosiciones);
     }
-  }, [selectedTemplate, config]); // Se quita selectedBus para evitar re-generación innecesaria
+  }, [selectedTemplate, config]);
 
-  const handleAddRow = () => {
+  const handleAddRow = (pisoActual: number) => {
     if (!selectedBus) return;
 
     setPosiciones(prevPosiciones => {
       const pos = [...prevPosiciones];
-      const maxFila = pos.length > 0 ? Math.max(...pos.map(p => p.fila)) : 0;
+      // Filtrar solo asientos del piso actual
+      const asientosPiso = pos.filter(p => p.piso === pisoActual);
+      const maxFila = asientosPiso.length > 0 ? Math.max(...asientosPiso.map(p => p.fila)) : 0;
       if (maxFila === 0) return pos;
 
-      // Lógica para agregar fila antes de la última
+      // Lógica para agregar fila antes de la última SOLO en el piso actual
       if (selectedTemplate === 'plantilla1' || selectedTemplate === 'plantilla2' || selectedTemplate === 'plantilla3') {
-      const lastRow = pos.filter(p => p.fila === maxFila);
-        const seatsBeforeLastRow = pos.filter(p => p.fila < maxFila);
-      
-        let currentSeatNumber = seatsBeforeLastRow.length > 0 ? Math.max(...seatsBeforeLastRow.map(p => p.numeroAsiento)) + 1 : 1;
-      const newRowFila = maxFila;
-      
-        // Agregar la nueva fila
+        const lastRow = asientosPiso.filter(p => p.fila === maxFila);
+        const seatsBeforeLastRow = asientosPiso.filter(p => p.fila < maxFila);
+        let currentSeatNumber = asientosPiso.length > 0 ? Math.max(...asientosPiso.map(p => p.numeroAsiento)) + 1 : 1;
+        const newRowFila = maxFila;
         let newRowSeats: PosicionAsiento[] = [];
-        if (selectedTemplate === 'plantilla2' || selectedTemplate === 'plantilla3') {
-          // Para Plantilla 2 y 3, agregar solo un asiento en la nueva fila
+        if (pisoActual === 2) {
+          // Piso 2: plantilla especial (siempre 4 asientos por fila, columnas 1,2,4,5)
           newRowSeats = [
-            { fila: newRowFila, columna: 1, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
+            { fila: newRowFila, columna: 1, piso: 2, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+            { fila: newRowFila, columna: 2, piso: 2, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+            { fila: newRowFila, columna: 4, piso: 2, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+            { fila: newRowFila, columna: 5, piso: 2, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
           ];
         } else {
-           // Para Plantilla 1, agregar una fila completa de 4 asientos
-           newRowSeats = [
-            { fila: newRowFila, columna: 1, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
-            { fila: newRowFila, columna: 2, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
-            { fila: newRowFila, columna: 4, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
-            { fila: newRowFila, columna: 5, piso: 1, tipoAsiento: 'NORMAL', precio: '0', numeroAsiento: currentSeatNumber++ },
-      ];
+          // Piso 1: plantilla seleccionada
+          if (selectedTemplate === 'plantilla1') {
+            newRowSeats = [
+              { fila: newRowFila, columna: 1, piso: 1, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+              { fila: newRowFila, columna: 2, piso: 1, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+              { fila: newRowFila, columna: 4, piso: 1, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+              { fila: newRowFila, columna: 5, piso: 1, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+            ];
+          } else if (selectedTemplate === 'plantilla2' || selectedTemplate === 'plantilla3') {
+            newRowSeats = [
+              { fila: newRowFila, columna: 1, piso: 1, tipoAsiento: 'NORMAL', numeroAsiento: currentSeatNumber++ },
+            ];
+          }
         }
-
-        // Mover la última fila hacia abajo y re-numerar sus asientos
+        // Mover la última fila hacia abajo y re-numerar sus asientos SOLO en el piso actual
         const updatedLastRow = lastRow
           .sort((a, b) => a.columna - b.columna)
           .map(seat => ({
-        ...seat,
+            ...seat,
             fila: maxFila + 1,
             numeroAsiento: currentSeatNumber++,
-      }));
-
-        const finalPosiciones = [...seatsBeforeLastRow, ...newRowSeats, ...updatedLastRow];
+          }));
+        // Mantener los asientos de otros pisos intactos
+        const otrosPisos = pos.filter(p => p.piso !== pisoActual);
+        const finalPosiciones = [
+          ...otrosPisos,
+          ...seatsBeforeLastRow,
+          ...newRowSeats,
+          ...updatedLastRow
+        ];
         return finalPosiciones.sort((a, b) => a.numeroAsiento - b.numeroAsiento);
       }
-
-      return pos; // No hacer nada para otras plantillas o si no hay selección
+      return pos;
     });
   };
 
@@ -283,38 +332,12 @@ export default function ConfiguracionAsientosPage() {
         return;
       }
 
-      // Validar que todos los precios sean números positivos con máximo 2 decimales
-      const preciosInvalidos = posiciones.some(p => {
-        const precio = parseFloat(p.precio);
-        return isNaN(precio) || precio < 0 || !/^\d+(\.\d{1,2})?$/.test(p.precio);
-      });
-
-      if (preciosInvalidos) {
-        setError('Todos los precios deben ser números positivos con máximo 2 decimales');
-        return;
-      }
-
       // Validar que en el piso 1 solo haya asientos NORMAL
       const asientosPiso1 = posiciones.filter(p => p.piso === 1);
       const asientosInvalidosPiso1 = asientosPiso1.some(p => p.tipoAsiento !== 'NORMAL');
       if (asientosInvalidosPiso1) {
         setError('En el piso 1 solo se permiten asientos de tipo NORMAL');
         return;
-      }
-
-      // Validar que los precios VIP sean mayores que los NORMAL en el piso 2
-      const asientosPiso2 = posiciones.filter(p => p.piso === 2);
-      const preciosVIP = asientosPiso2.filter(p => p.tipoAsiento === 'VIP').map(p => parseFloat(p.precio));
-      const preciosNORMAL = asientosPiso2.filter(p => p.tipoAsiento === 'NORMAL').map(p => parseFloat(p.precio));
-
-      if (preciosVIP.length > 0 && preciosNORMAL.length > 0) {
-        const minPrecioVIP = Math.min(...preciosVIP);
-        const maxPrecioNORMAL = Math.max(...preciosNORMAL);
-
-        if (minPrecioVIP <= maxPrecioNORMAL) {
-          setError('Los precios de los asientos VIP deben ser mayores que los asientos NORMAL');
-          return;
-        }
       }
 
       // --- TRANSFORMACIÓN PARA EL BACKEND ---
@@ -324,7 +347,7 @@ export default function ConfiguracionAsientosPage() {
         piso: p.piso,
         tipoAsiento: p.tipoAsiento,
         numeroAsiento: p.numeroAsiento,
-        ocupado: false // por defecto
+        ocupado: false, // por defecto
       }));
 
       if (config) {
@@ -339,7 +362,31 @@ export default function ConfiguracionAsientosPage() {
       setConfig(cfg);
       setPosiciones(cfg ? JSON.parse(cfg.posicionesJson) : []);
     } catch (e: any) {
-      setSnackbar({open: true, message: e.message || 'Error al guardar', severity: 'error'});
+      let mensaje = 'Error al guardar';
+      try {
+        if (e && e.response && e.response.data) {
+          // Caso Axios
+          const data = e.response.data;
+          if (data.message) {
+            mensaje = Array.isArray(data.message) ? data.message.join(' ') : data.message;
+          } else if (typeof data.error === 'string') {
+            mensaje = data.error;
+          }
+        } else if (e && e.message) {
+          // Caso fetch
+          mensaje = e.message;
+        } else if (typeof e === 'string') {
+          mensaje = e;
+        } else if (e instanceof Response) {
+          const data = await e.json();
+          if (data && data.message) {
+            mensaje = Array.isArray(data.message) ? data.message.join(' ') : data.message;
+          } else if (typeof data.error === 'string') {
+            mensaje = data.error;
+          }
+        }
+      } catch {}
+      setSnackbar({open: true, message: mensaje, severity: 'error'});
     } finally {
       setLoading(false);
     }
@@ -352,10 +399,16 @@ export default function ConfiguracionAsientosPage() {
       </Typography>
       <Autocomplete
         options={buses.filter(b => b.activo)}
-        getOptionLabel={(option) => `${option.placa} - ${option.numero_bus}`}
+        getOptionLabel={(option) => `${option.numero_bus} - ${option.placa}`}
         value={selectedBus}
         onChange={(_, value) => setSelectedBus(value)}
-        renderInput={(params) => <TextField {...params} label="Selecciona un bus" />}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Selecciona un bus (formato: NÚMERO - PLACA)"
+            helperText="Ejemplo: 25 - SDF-2423. Selecciona el bus por su número y placa."
+          />
+        )}
         sx={{ maxWidth: 400, mb: 3 }}
         isOptionEqualToValue={(a, b) => a.id === b.id}
         disabled={buses.length === 0}
@@ -433,7 +486,7 @@ export default function ConfiguracionAsientosPage() {
             bus={selectedBus}
             posiciones={posiciones}
             onChange={setPosiciones}
-            onAddRow={handleAddRow}
+            onAddRow={(pisoActual) => handleAddRow(pisoActual)}
             template={selectedTemplate}
           />
           <Button
