@@ -10,6 +10,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AirlineSeatLegroomNormalIcon from '@mui/icons-material/AirlineSeatLegroomNormal';
 import SettingsIcon from '@mui/icons-material/Settings';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 export interface NavigationItem {
   label: string;
@@ -33,7 +34,7 @@ export const navigationByRole: RoleNavigation = {
     { label: 'Gestión de Choferes', href: '/dashboard/user/choferes', icon: 'Group' },
     { label: 'Gestión de Paradas', href: '/dashboard/user/paradas', icon: 'Room' },
     { label: 'Gestión de Rutas', href: '/dashboard/user/rutas', icon: 'AltRoute' },
-    { label: 'Resolución', href: '/dashboard/user/resolucion', icon: 'Gavel' },
+    { label: 'Gestión de Tarifas', href: '/dashboard/user/tarifas', icon: 'AttachMoney' },
     { label: 'Gestión Oficinistas', href: '/dashboard/user/oficinistas', icon: 'Work' },
     { label: 'Hoja de Ruta', href: '/dashboard/user/route-sheet', icon: 'Assignment' },
     { label: 'Configuración', href: '/dashboard/user/configuracion', icon: 'Settings' },
