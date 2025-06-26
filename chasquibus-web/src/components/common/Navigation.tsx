@@ -37,6 +37,7 @@ import AltRouteIcon from '@mui/icons-material/AltRoute';
 import GavelIcon from '@mui/icons-material/Gavel';
 import WorkIcon from '@mui/icons-material/Work';
 import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Usuarios': <PeopleIcon color="primary" />,
@@ -52,7 +53,7 @@ const iconMap: Record<string, React.ReactNode> = {
   'Configuración Asientos': <AirlineSeatLegroomNormalIcon color="primary" />,
   'Gestión de Paradas': <RoomIcon color="primary" />,
   'Gestión de Rutas': <AltRouteIcon color="primary" />,
-  'Resolución': <GavelIcon color="primary" />,
+  'Gestión de Tarifas': <AttachMoneyIcon color="primary" />,
   'Gestión Oficinistas': <WorkIcon color="primary" />,
 };
 
