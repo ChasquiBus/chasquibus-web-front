@@ -51,12 +51,19 @@ const HojaTrabajoForm: React.FC<HojaTrabajoFormProps> = ({ open, onClose, onSubm
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev: any) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = () => {
     if (!validate()) return;
-    onSubmit(form);
+    const payload = {
+      busId: Number(form.busId),
+      choferId: Number(form.choferId),
+      frecDiaId: Number(form.frecDiaId),
+      fechaSalida: form.fechaSalida,
+      observaciones: form.observaciones
+    };
+    onSubmit(payload);
   };
 
   return (

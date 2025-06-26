@@ -11,7 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import HojaTrabajoTable from '@/components/hojaTrabajo/HojaTrabajoTable';
 import HojaTrabajoForm from '@/components/hojaTrabajo/HojaTrabajoForm';
-import { getHojasTrabajoViajes, createHojaTrabajo, updateHojaTrabajo, deleteHojaTrabajo, EstadoHojaTrabajo, HojaTrabajo } from '@/services/hojaTrabajo';
+import { getHojasTrabajoCooperativa, createHojaTrabajoManual, createHojaTrabajoAuto, updateHojaTrabajo, deleteHojaTrabajo, EstadoHojaTrabajo, HojaTrabajoDetallada } from '@/services/hojaTrabajo';
 import { busesService } from '@/services/buses';
 import { choferesService } from '@/services/choferes';
 import { getFrequenciesByCooperativa } from '@/services/frequencies';
@@ -22,42 +22,43 @@ import MenuItem from '@mui/material/MenuItem';
 const estados: EstadoHojaTrabajo[] = ['programado', 'en curso', 'completado', 'suspendido', 'cancelado'];
 
 export default function RouteSheetPage() {
-  const [hojas, setHojas] = useState<HojaTrabajo[]>([]);
+  const [hojas, setHojas] = useState<HojaTrabajoDetallada[]>([]);
   const [buses, setBuses] = useState<{ id: number; placa: string }[]>([]);
   const [choferes, setChoferes] = useState<{ id: number; nombre: string }[]>([]);
   const [frecuencias, setFrecuencias] = useState<any[]>([]);
   const [rutas, setRutas] = useState<{ id: number; nombre: string }[]>([]);
   const [openForm, setOpenForm] = useState(false);
-  const [editing, setEditing] = useState<HojaTrabajo | null>(null);
+  const [editing, setEditing] = useState<HojaTrabajoDetallada | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<string>('');
+  const [filtroFecha, setFiltroFecha] = useState<string>('');
+  const [filtroRuta, setFiltroRuta] = useState<string>('');
+  const [openAuto, setOpenAuto] = useState(false);
+  const [autoForm, setAutoForm] = useState({ numDias: 1, fechaInicial: '' });
 
   const loadData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('access_token') || '';
-      // Asume que cooperativaId está disponible, si no, ajustar según contexto
       const cooperativaId = 1;
       const [hojasData, busesData, choferesData, frecData, rutasData] = await Promise.all([
-        getHojasTrabajoViajes(filtroEstado as EstadoHojaTrabajo),
+        getHojasTrabajoCooperativa(),
         busesService.getAll(),
         choferesService.getAllChoferes(cooperativaId, token),
         getFrequenciesByCooperativa(),
         getRutas(),
       ]);
-      setHojas(hojasData);
-      // DEBUG: Verificar datos de buses
-      if (typeof window !== 'undefined') {
-        // Solo loguear en cliente
-        console.log('BUSES', busesData);
-      }
-      setBuses(busesData.map((b: any) => ({ id: b.id, placa: b.placa })));
+      let hojasFiltradas = Array.isArray(hojasData) ? hojasData : [];
+      if (filtroEstado) hojasFiltradas = hojasFiltradas.filter(h => h.estado === filtroEstado);
+      if (filtroFecha) hojasFiltradas = hojasFiltradas.filter(h => h.horaSalidaProg && h.horaSalidaProg.startsWith(filtroFecha));
+      if (filtroRuta) hojasFiltradas = hojasFiltradas.filter(h => String(h.rutaId) === filtroRuta);
+      setHojas(hojasFiltradas);
+      setBuses(busesData.filter((b: any) => b.activo).map((b: any) => ({ id: b.id, placa: b.placa })));
       setChoferes(choferesData.map((c: any) => ({ id: c.id, nombre: c.usuario ? `${c.usuario.nombre} ${c.usuario.apellido || ''}`.trim() : c.id })));
       setFrecuencias(frecData);
-      // Mapear rutas con nombre legible
       const rutasMapped = rutasData.map((r: any) => ({
         id: r.id,
         nombre: `Ruta ${r.id}: ${r.paradaOrigenId} → ${r.paradaDestinoId}`,
@@ -67,6 +68,7 @@ export default function RouteSheetPage() {
       let msg = 'Error al cargar datos';
       if (e?.response?.data?.message) msg = e.response.data.message;
       setError(msg);
+      setHojas([]);
     } finally {
       setLoading(false);
     }
@@ -75,14 +77,14 @@ export default function RouteSheetPage() {
   useEffect(() => {
     loadData();
     // eslint-disable-next-line
-  }, [filtroEstado]);
+  }, [filtroEstado, filtroFecha, filtroRuta]);
 
   const handleOpenForm = () => {
     setEditing(null);
     setOpenForm(true);
   };
 
-  const handleEdit = (row: HojaTrabajo) => {
+  const handleEdit = (row: HojaTrabajoDetallada) => {
     setEditing(row);
     setOpenForm(true);
   };
@@ -94,7 +96,7 @@ export default function RouteSheetPage() {
         await updateHojaTrabajo(editing.id, data);
         setSuccess('Hoja de trabajo actualizada correctamente');
       } else {
-        await createHojaTrabajo(data);
+        await createHojaTrabajoManual(data);
         setSuccess('Hoja de trabajo creada correctamente');
       }
       setOpenForm(false);
@@ -127,32 +129,56 @@ export default function RouteSheetPage() {
 
   return (
     <Box>
-      <Box display="flex" alignItems="center" gap={2} mt={2} mb={2}>
+      <Box display="flex" alignItems="center" gap={1.5} mt={2} mb={2}>
         <Typography variant="h4" component="h1">
           Hojas de Trabajo
         </Typography>
-        <Button variant="contained" color="primary" onClick={handleOpenForm} sx={{ ml: 'auto' }}>
-          Nueva Hoja de Trabajo
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+          <Button variant="contained" color="primary" size="small" onClick={handleOpenForm}>
+            Crear manualmente
+          </Button>
+          <Button variant="outlined" color="secondary" size="small" onClick={() => setOpenAuto(true)}>
+            Crear automáticamente
+          </Button>
+        </Box>
         <TextField
           select
           label="Filtrar por estado"
           value={filtroEstado}
           onChange={e => setFiltroEstado(e.target.value)}
-          sx={{ minWidth: 180, ml: 2 }}
+          sx={{ minWidth: 130, ml: 2 }}
+          size="small"
         >
           <MenuItem value="">Todos</MenuItem>
           {estados.map(e => (
             <MenuItem key={e} value={e}>{e}</MenuItem>
           ))}
         </TextField>
+        <TextField
+          label="Filtrar por fecha"
+          type="date"
+          value={filtroFecha}
+          onChange={e => setFiltroFecha(e.target.value)}
+          sx={{ minWidth: 130 }}
+          InputLabelProps={{ shrink: true }}
+          size="small"
+        />
+        <TextField
+          select
+          label="Filtrar por ruta"
+          value={filtroRuta}
+          onChange={e => setFiltroRuta(e.target.value)}
+          sx={{ minWidth: 150 }}
+          size="small"
+        >
+          <MenuItem value="">Todas</MenuItem>
+          {rutas.map(r => (
+            <MenuItem key={r.id} value={String(r.id)}>{r.nombre}</MenuItem>
+          ))}
+        </TextField>
       </Box>
       <HojaTrabajoTable
         hojas={hojas}
-        buses={buses}
-        choferes={choferes}
-        rutas={rutas}
-        frecuencias={frecuencias}
         onEdit={handleEdit}
         onDelete={setDeleteId}
         onView={() => {}}
@@ -188,6 +214,52 @@ export default function RouteSheetPage() {
           {error}
         </MuiAlert>
       </Snackbar>
+      {/* Modal para creación automática */}
+      <Dialog open={openAuto} onClose={() => setOpenAuto(false)}>
+        <DialogTitle>Crear hojas de trabajo automáticamente</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 350 }}>
+          <TextField
+            label="Número de días"
+            type="number"
+            value={autoForm.numDias}
+            onChange={e => setAutoForm({ ...autoForm, numDias: Number(e.target.value) })}
+            fullWidth
+            inputProps={{ min: 1 }}
+          />
+          <TextField
+            label="Fecha inicial"
+            type="date"
+            value={autoForm.fechaInicial}
+            onChange={e => setAutoForm({ ...autoForm, fechaInicial: e.target.value })}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAuto(false)}>Cancelar</Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              setLoading(true);
+              try {
+                await createHojaTrabajoAuto(autoForm);
+                setSuccess('Hojas de trabajo creadas automáticamente');
+                setOpenAuto(false);
+                loadData();
+              } catch (e: any) {
+                let msg = 'Error al crear hojas automáticamente';
+                if (e?.response?.data?.message) msg = e.response.data.message;
+                setError(msg);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading || !autoForm.numDias || !autoForm.fechaInicial}
+          >
+            Crear
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

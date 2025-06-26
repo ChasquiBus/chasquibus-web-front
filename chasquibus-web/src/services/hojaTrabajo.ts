@@ -16,15 +16,17 @@ export interface HojaTrabajo {
   fechaSalida?: string;
 }
 
-export interface CreateHojaTrabajoDto {
+export interface CreateHojaTrabajoManualDto {
   busId: number;
   choferId: number;
   frecDiaId: number;
+  fechaSalida: string;
   observaciones?: string;
-  estado: EstadoHojaTrabajo;
-  horaSalidaReal?: string;
-  horaLlegadaReal?: string;
-  fechaSalida?: string;
+}
+
+export interface CreateHojaTrabajoAutoDto {
+  numDias: number;
+  fechaInicial: string;
 }
 
 export interface UpdateHojaTrabajoDto {
@@ -38,14 +40,52 @@ export interface UpdateHojaTrabajoDto {
   fechaSalida?: string;
 }
 
+export interface HojaTrabajoDetallada {
+  id: number;
+  idBus: number;
+  idFrecuencia: number;
+  placa: string;
+  imagen: string;
+  piso_doble: boolean;
+  total_asientos: number;
+  total_asientos_piso2: number | null;
+  horaSalidaProg: string;
+  horaLlegadaProg: string;
+  rutaId: number;
+  codigo: string;
+  ciudad_origen: string;
+  ciudad_destino: string;
+  idCooperativa: number;
+  nombre_cooperativa: string;
+  logo: string;
+  estado: EstadoHojaTrabajo;
+}
+
 function getToken() {
   return localStorage.getItem('access_token');
 }
 
-export async function createHojaTrabajo(data: CreateHojaTrabajoDto): Promise<HojaTrabajo> {
+// Crear hoja de trabajo automáticamente
+export async function createHojaTrabajoAuto(data: CreateHojaTrabajoAutoDto): Promise<any> {
   const token = getToken();
   try {
-    const res = await axios.post(`${API_URL}/hoja-trabajo`, data, {
+    const res = await axios.post(`${API_URL}/hoja-trabajo/crear/automaticamente`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return res.data;
+  } catch (e: any) {
+    throw e;
+  }
+}
+
+// Crear hoja de trabajo manualmente
+export async function createHojaTrabajoManual(data: CreateHojaTrabajoManualDto): Promise<HojaTrabajo> {
+  const token = getToken();
+  try {
+    const res = await axios.post(`${API_URL}/hoja-trabajo/crear/manualmente`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -57,6 +97,7 @@ export async function createHojaTrabajo(data: CreateHojaTrabajoDto): Promise<Hoj
   }
 }
 
+// Actualizar hoja de trabajo
 export async function updateHojaTrabajo(id: number, data: UpdateHojaTrabajoDto): Promise<HojaTrabajo> {
   const token = getToken();
   try {
@@ -72,6 +113,7 @@ export async function updateHojaTrabajo(id: number, data: UpdateHojaTrabajoDto):
   }
 }
 
+// Eliminar hoja de trabajo
 export async function deleteHojaTrabajo(id: number): Promise<void> {
   const token = getToken();
   try {
@@ -83,44 +125,17 @@ export async function deleteHojaTrabajo(id: number): Promise<void> {
   }
 }
 
-export async function getHojasTrabajoViajes(estado?: EstadoHojaTrabajo): Promise<HojaTrabajo[]> {
-  const token = getToken();
-  const params = estado ? { estado } : {};
-  const res = await axios.get(`${API_URL}/hoja-trabajo/viajes`, {
-    params,
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data as HojaTrabajo[];
-}
-
-export async function getHojaTrabajoById(id: number): Promise<HojaTrabajo> {
-  const token = getToken();
-  const res = await axios.get(`${API_URL}/hoja-trabajo/viaje/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data as HojaTrabajo;
-}
-
-export async function getHojasTrabajoByEstado(estado: EstadoHojaTrabajo): Promise<HojaTrabajo[]> {
-  const token = getToken();
-  const res = await axios.get(`${API_URL}/hoja-trabajo/estado/${estado}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data as HojaTrabajo[];
-}
-
-export async function getHojasTrabajoCooperativa(): Promise<HojaTrabajo[]> {
+// Listar hojas de trabajo de la cooperativa
+export async function getHojasTrabajoCooperativa(): Promise<HojaTrabajoDetallada[]> {
   const token = getToken();
   const res = await axios.get(`${API_URL}/hoja-trabajo/cooperativa/mis-hojas`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return res.data as HojaTrabajo[];
+  return res.data.data as HojaTrabajoDetallada[];
 }
 
-export async function getHojasTrabajoChofer(): Promise<HojaTrabajo[]> {
-  const token = getToken();
-  const res = await axios.get(`${API_URL}/hoja-trabajo/chofer/mis-programadas`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data as HojaTrabajo[];
-} 
+// Los siguientes métodos NO están permitidos para ADMIN/OFICINISTA y se comentan para evitar su uso:
+// export async function getHojasTrabajoViajes(estado?: EstadoHojaTrabajo): Promise<HojaTrabajo[]> { ... }
+// export async function getHojaTrabajoById(id: number): Promise<HojaTrabajo> { ... }
+// export async function getHojasTrabajoByEstado(estado: EstadoHojaTrabajo): Promise<HojaTrabajo[]> { ... }
+// export async function getHojasTrabajoChofer(): Promise<HojaTrabajo[]> { ... } 

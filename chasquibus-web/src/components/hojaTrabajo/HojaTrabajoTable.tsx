@@ -11,18 +11,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import Chip from '@mui/material/Chip';
-import { HojaTrabajo, EstadoHojaTrabajo } from '@/services/hojaTrabajo';
+import { HojaTrabajoDetallada, EstadoHojaTrabajo } from '@/services/hojaTrabajo';
 import MuiAlert from '@mui/material/Alert';
 
 interface HojaTrabajoTableProps {
-  hojas: HojaTrabajo[];
-  buses: { id: number; placa: string; imagen?: string }[];
-  choferes: { id: number; nombre: string }[];
-  rutas: { id: number; nombre: string }[];
-  frecuencias: { id: number; horaSalidaProg: string; horaLlegadaProg: string; rutaId: number }[];
-  onEdit: (row: HojaTrabajo) => void;
+  hojas: HojaTrabajoDetallada[];
+  onEdit: (row: HojaTrabajoDetallada) => void;
   onDelete: (id: number) => void;
-  onView: (row: HojaTrabajo) => void;
+  onView: (row: HojaTrabajoDetallada) => void;
   error?: string;
 }
 
@@ -34,7 +30,7 @@ const estadoColor: Record<EstadoHojaTrabajo, 'success' | 'info' | 'default' | 'e
   cancelado: 'error',
 };
 
-const HojaTrabajoTable: React.FC<HojaTrabajoTableProps> = ({ hojas, buses, choferes, rutas, frecuencias, onEdit, onDelete, onView, error }) => {
+const HojaTrabajoTable: React.FC<HojaTrabajoTableProps> = ({ hojas, onEdit, onDelete, onView, error }) => {
   return (
     <>
       {error && <MuiAlert severity="error">{error}</MuiAlert>}
@@ -43,9 +39,10 @@ const HojaTrabajoTable: React.FC<HojaTrabajoTableProps> = ({ hojas, buses, chofe
           <TableHead>
             <TableRow>
               <TableCell>Bus</TableCell>
-              <TableCell>Chofer</TableCell>
+              <TableCell>Piso Doble</TableCell>
+              <TableCell>Asientos</TableCell>
               <TableCell>Ruta</TableCell>
-              <TableCell>Fecha Salida</TableCell>
+              <TableCell>Código</TableCell>
               <TableCell>Hora Salida</TableCell>
               <TableCell>Hora Llegada</TableCell>
               <TableCell>Estado</TableCell>
@@ -53,19 +50,25 @@ const HojaTrabajoTable: React.FC<HojaTrabajoTableProps> = ({ hojas, buses, chofe
             </TableRow>
           </TableHead>
           <TableBody>
-            {hojas.map((row) => {
-              const bus = buses.find((b) => b.id === row.busId);
-              const chofer = choferes.find((c) => c.id === row.choferId);
-              const frecuencia = frecuencias.find((f) => f.id === row.frecDiaId);
-              const ruta = rutas.find((r) => r.id === (frecuencia?.rutaId || 0));
-              return (
+            {hojas.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center">No hay hojas de trabajo para mostrar.</TableCell>
+              </TableRow>
+            ) : (
+              hojas.map((row) => (
                 <TableRow key={row.id}>
-                  <TableCell>{bus ? `${bus.placa}` : row.busId}</TableCell>
-                  <TableCell>{chofer ? chofer.nombre : row.choferId}</TableCell>
-                  <TableCell>{ruta ? ruta.nombre : frecuencia?.rutaId}</TableCell>
-                  <TableCell>{row.fechaSalida || '-'}</TableCell>
-                  <TableCell>{frecuencia?.horaSalidaProg || '-'}</TableCell>
-                  <TableCell>{frecuencia?.horaLlegadaProg || '-'}</TableCell>
+                  <TableCell>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {row.imagen && <img src={row.imagen} alt={row.placa} style={{ width: 40, height: 28, objectFit: 'cover', borderRadius: 4 }} />}
+                      <span>{row.placa}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{row.piso_doble ? 'Sí' : 'No'}</TableCell>
+                  <TableCell>{row.total_asientos}{row.total_asientos_piso2 ? ` / ${row.total_asientos_piso2}` : ''}</TableCell>
+                  <TableCell>{`${row.ciudad_origen} → ${row.ciudad_destino}`}</TableCell>
+                  <TableCell>{row.codigo}</TableCell>
+                  <TableCell>{row.horaSalidaProg || '-'}</TableCell>
+                  <TableCell>{row.horaLlegadaProg || '-'}</TableCell>
                   <TableCell>
                     <Chip label={row.estado} color={estadoColor[row.estado]} size="small" />
                   </TableCell>
@@ -75,8 +78,8 @@ const HojaTrabajoTable: React.FC<HojaTrabajoTableProps> = ({ hojas, buses, chofe
                     <IconButton color="error" onClick={() => onDelete(row.id)} disabled={!(row.estado === 'programado' || row.estado === 'suspendido' || row.estado === 'cancelado')}><DeleteIcon /></IconButton>
                   </TableCell>
                 </TableRow>
-              );
-            })}
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
