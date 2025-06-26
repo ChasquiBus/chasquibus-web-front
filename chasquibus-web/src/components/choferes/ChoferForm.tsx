@@ -97,7 +97,8 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
 
         dataToSend = updateDto;
       } else {
-        dataToSend = { ...values, cooperativaTransporteId: cooperativaId, activo: values.activo ?? true } as CreateChoferDto;
+        const { cooperativaTransporteId, activo, ...rest } = values;
+        dataToSend = { ...rest } as CreateChoferDto;
       }
       
       onSubmit(dataToSend);
@@ -244,13 +245,9 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
         >
-          <MenuItem value="A">A</MenuItem>
-          <MenuItem value="B">B</MenuItem>
-          <MenuItem value="C">C</MenuItem>
           <MenuItem value="D">D</MenuItem>
+          <MenuItem value="D1">D1</MenuItem>
           <MenuItem value="E">E</MenuItem>
-          <MenuItem value="F">F</MenuItem>
-          <MenuItem value="G">G</MenuItem>
         </Select>
         {formik.touched.tipoLicencia && Boolean(formik.errors.tipoLicencia) && (
           <Typography color="error" variant="caption">
