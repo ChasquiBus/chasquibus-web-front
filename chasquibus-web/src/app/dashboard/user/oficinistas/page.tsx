@@ -40,8 +40,7 @@ export default function OficinistasPage() {
     setError(null);
     try {
       const data: Oficinista[] = await oficinistasService.getAllOficinistas(token);
-      const activeOficinistas = data.filter((oficinista: Oficinista) => oficinista.usuario?.activo);
-      setOficinistas(activeOficinistas as Oficinista[]);
+      setOficinistas(data as Oficinista[]);
     } catch (err) {
       setError('Error al cargar los oficinistas.');
     } finally {
@@ -113,15 +112,11 @@ export default function OficinistasPage() {
     setLoading(true);
     setError(null);
     try {
-      await oficinistasService.updateOficinista(
-        oficinistaToDeleteId,
-        { activo: false },
-        token
-      );
+      await oficinistasService.deleteOficinista(oficinistaToDeleteId, token);
       fetchOficinistas();
       setIsConfirmModalOpen(false);
       setOficinistaToDeleteId(null);
-      setSnackbarMessage('Oficinista eliminado lógicamente exitosamente.');
+      setSnackbarMessage('Oficinista eliminado exitosamente.');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     } catch (err: any) {

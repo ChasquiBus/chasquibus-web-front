@@ -16,13 +16,11 @@ const OficinistaForm: React.FC<OficinistaFormProps> = ({ initialData, onSubmit, 
   const validationSchema = yup.object({
     nombre: yup.string().required('El nombre es obligatorio'),
     apellido: yup.string().required('El apellido es obligatorio'),
-    cedula: yup.string().required('La cédula es obligatoria').matches(/^\d{10}$/, 'La cédula debe tener 10 dígitos'),
+    cedula: yup.string().required('La cédula es obligatoria').matches(/^[0-9]{10}$/, 'La cédula debe tener 10 dígitos'),
     telefono: yup.string().required('El teléfono es obligatorio'),
     email: yup.string().email('Introduce un email válido').required('El email es obligatorio'),
     password: isEdit
-      ? yup.string().test('password', 'La contraseña no puede estar vacía', function(value) {
-          return !value || value.length > 0;
-        })
+      ? yup.string()
       : yup.string().required('La contraseña es obligatoria').min(6, 'Mínimo 6 caracteres'),
   });
 
@@ -35,26 +33,17 @@ const OficinistaForm: React.FC<OficinistaFormProps> = ({ initialData, onSubmit, 
       email: initialData?.usuario?.email || '',
       password: '',
       cooperativaTransporteId: cooperativaId,
-      activo: isEdit ? (initialData?.usuario?.activo ?? true) : undefined,
     },
     validationSchema,
     onSubmit: (values) => {
       if (isEdit) {
-        const updateValues = values as UpdateOficinistaDto;
-
-        const updateDto: UpdateOficinistaDto = {
-          nombre: updateValues.nombre,
-          apellido: updateValues.apellido,
-          cedula: updateValues.cedula,
-          telefono: updateValues.telefono,
-          email: updateValues.email,
-        };
-        if (typeof updateValues.activo === 'boolean') {
-          updateDto.activo = updateValues.activo;
-        }
-        if (updateValues.password && updateValues.password !== '') {
-          updateDto.password = updateValues.password;
-        }
+        const updateDto: UpdateOficinistaDto = {};
+        if (values.nombre) updateDto.nombre = values.nombre;
+        if (values.apellido) updateDto.apellido = values.apellido;
+        if (values.cedula) updateDto.cedula = values.cedula;
+        if (values.telefono) updateDto.telefono = values.telefono;
+        if (values.email) updateDto.email = values.email;
+        if (values.password) updateDto.password = values.password;
         onSubmit(updateDto);
       } else {
         const createDto: CreateOficinistaDto = {
