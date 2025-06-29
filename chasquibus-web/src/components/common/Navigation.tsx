@@ -38,8 +38,12 @@ import WorkIcon from '@mui/icons-material/Work';
 import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const iconMap: Record<string, React.ReactNode> = {
+  'Dashboard': <DashboardIcon color="primary" />,
   'Gestión de Usuarios': <PeopleIcon color="primary" />,
   'Gestión de Cooperativas': <BusinessIcon color="primary" />,
   'Configuración General': <SettingsIcon color="primary" />,
@@ -56,6 +60,8 @@ const iconMap: Record<string, React.ReactNode> = {
   'Gestión de Tarifas': <AttachMoneyIcon color="primary" />,
   'Gestión Oficinistas': <WorkIcon color="primary" />,
   'Hojas de Trabajo': <AssignmentIcon color="primary" />,
+  'Boletos': <ConfirmationNumberIcon color="primary" />,
+  'Ventas': <PointOfSaleIcon color="primary" />,
 };
 
 interface NavigationProps {

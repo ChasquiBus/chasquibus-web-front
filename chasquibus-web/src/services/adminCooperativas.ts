@@ -41,4 +41,18 @@ export const adminCooperativasService = {
     });
     if (!response.ok) throw new Error('Error al eliminar el administrador');
   },
+  async getAllOficinistas(): Promise<any[]> {
+    const response = await fetch(`${API_URL}/admin-cooperativas/obtener-oficinistas`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` },
+    });
+    if (!response.ok) throw new Error('Error al obtener los oficinistas');
+    return response.json();
+  },
+  async getById(id: number): Promise<any> {
+    const response = await fetch(`${API_URL}/admin-cooperativas/${id}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` },
+    });
+    if (!response.ok) throw new Error('Error al obtener el admin/oficinista por ID');
+    return response.json();
+  },
 }; 

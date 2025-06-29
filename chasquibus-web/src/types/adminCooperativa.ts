@@ -1,6 +1,7 @@
 export interface AdminCooperativa {
   id: number;
   cooperativaTransporteId: number;
+  cooperativaTransporte?: any;
   usuario: {
     id: number;
     email: string;

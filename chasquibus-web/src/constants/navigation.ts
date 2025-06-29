@@ -12,6 +12,8 @@ import AirlineSeatLegroomNormalIcon from '@mui/icons-material/AirlineSeatLegroom
 import SettingsIcon from '@mui/icons-material/Settings';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 
 export interface NavigationItem {
   label: string;
@@ -25,6 +27,7 @@ interface RoleNavigation {
 
 export const navigationByRole: RoleNavigation = {
   admin: [
+    { label: 'Dashboard', href: '/dashboard/admin', icon: 'Dashboard' },
     { label: 'Gestión de Usuarios', href: '/dashboard/admin/users' },
     { label: 'Gestión de Cooperativas', href: '/dashboard/admin/cooperatives' },
     { label: 'Cerrar Sesión', href: '/auth/login' },
@@ -43,10 +46,16 @@ export const navigationByRole: RoleNavigation = {
     { label: 'Cerrar Sesión', href: '/auth/login', icon: 'Logout' },
   ],
   office: [
-    { label: 'Dashboard', href: '/office/dashboard' },
-    { label: 'Gestión de Rutas', href: '/office/routes' },
-    { label: 'Clientes', href: '/office/clients' },
-    { label: 'Reportes', href: '/office/reports' },
+    { label: 'Gestión de Buses', href: '/dashboard/office/buses', icon: 'DirectionsBus' },
+    { label: 'Gestión de Choferes', href: '/dashboard/office/choferes', icon: 'Group' },
+    { label: 'Gestión de Paradas', href: '/dashboard/office/paradas', icon: 'Room' },
+    { label: 'Gestión de Rutas', href: '/dashboard/office/rutas', icon: 'AltRoute' },
+    { label: 'Gestión de Tarifas', href: '/dashboard/office/tarifas', icon: 'AttachMoney' },
+    { label: 'Gestión de Frecuencias', href: '/dashboard/office/frecuencias', icon: 'Schedule' },
+    { label: 'Hojas de Trabajo', href: '/dashboard/office/hojas-trabajo', icon: 'Assignment' },
+    { label: 'Boletos', href: '/dashboard/office/boletos', icon: 'ConfirmationNumber' },
+    { label: 'Ventas', href: '/dashboard/office/ventas', icon: 'PointOfSale' },
+    { label: 'Cerrar Sesión', href: '/auth/login', icon: 'Logout' },
   ],
   client: [
     { label: 'Inicio', href: '/client/home' },
