@@ -41,6 +41,8 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import PercentIcon from '@mui/icons-material/Percent';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Dashboard': <DashboardIcon color="primary" />,
@@ -62,6 +64,8 @@ const iconMap: Record<string, React.ReactNode> = {
   'Hojas de Trabajo': <AssignmentIcon color="primary" />,
   'Boletos': <ConfirmationNumberIcon color="primary" />,
   'Ventas': <PointOfSaleIcon color="primary" />,
+  'Descuentos': <PercentIcon color="primary" />,
+  'Métodos de Pago': <CreditCardIcon color="primary" />,
 };
 
 interface NavigationProps {

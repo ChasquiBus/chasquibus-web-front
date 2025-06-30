@@ -31,6 +31,7 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
     estado: true,
     diasOperacion: [],
     file: null,
+    esDirecto: false,
   });
   const [diasSeleccionados, setDiasSeleccionados] = useState<number[]>([]);
 
@@ -45,10 +46,11 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
         estado: rutaInicial.estado ?? true,
         diasOperacion: rutaInicial.diasOperacion || [],
         file: null,
+        esDirecto: rutaInicial.esDirecto ?? false,
       });
       setDiasSeleccionados(rutaInicial.diasOperacion.map((d: DiaOperacion) => d.diaId));
     } else {
-      setForm({ paradaOrigenId: '', paradaDestinoId: '', prioridad: '', fechaIniVigencia: '', fechaFinVigencia: '', estado: true, diasOperacion: [], file: null });
+      setForm({ paradaOrigenId: '', paradaDestinoId: '', prioridad: '', fechaIniVigencia: '', fechaFinVigencia: '', estado: true, diasOperacion: [], file: null, esDirecto: false });
       setDiasSeleccionados([]);
     }
   }, [rutaInicial]);
@@ -78,6 +80,7 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
       paradaDestinoId: Number(form.paradaDestinoId),
       prioridad: form.prioridad ? Number(form.prioridad) : undefined,
       estado: Boolean(form.estado),
+      esDirecto: Boolean(form.esDirecto),
       diasOperacion,
       file: form.file,
     };
@@ -158,6 +161,15 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
         control={<Switch checked={form.estado} onChange={e => setForm((prev: any) => ({ ...prev, estado: e.target.checked }))} />}
         label="¿Activa?"
       />
+      <FormControlLabel
+        control={<Switch checked={form.esDirecto} onChange={e => setForm((prev: any) => ({ ...prev, esDirecto: e.target.checked }))} />}
+        label="¿Es ruta directa?"
+      />
+      {form.esDirecto && (
+        <Box sx={{ color: 'orange', fontWeight: 500, mb: 1 }}>
+          Esta ruta es directa, no se podrán gestionar paradas intermedias.
+        </Box>
+      )}
       <Button variant="contained" component="label">
         {form.file ? form.file.name : 'Subir PDF de Resolución'}
         <input type="file" accept="application/pdf" hidden onChange={handleChange} name="file" />

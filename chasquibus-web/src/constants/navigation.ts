@@ -14,6 +14,8 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import PercentIcon from '@mui/icons-material/Percent';
 
 export interface NavigationItem {
   label: string;
@@ -42,6 +44,10 @@ export const navigationByRole: RoleNavigation = {
     { label: 'Gestión de Frecuencias', href: '/dashboard/user/frequencies', icon: 'Schedule' },
     { label: 'Hojas de Trabajo', href: '/dashboard/user/route-sheet', icon: 'Assignment' },
     { label: 'Gestión Oficinistas', href: '/dashboard/user/oficinistas', icon: 'Work' },
+    { label: 'Boletos', href: '/dashboard/user/boletos', icon: 'ConfirmationNumber' },
+    { label: 'Ventas', href: '/dashboard/user/ventas', icon: 'PointOfSale' },
+    { label: 'Descuentos', href: '/dashboard/user/descuentos', icon: 'Percent' },
+    { label: 'Métodos de Pago', href: '/dashboard/user/metodos-pago', icon: 'CreditCard' },
     { label: 'Configuración', href: '/dashboard/user/configuracion', icon: 'Settings' },
     { label: 'Cerrar Sesión', href: '/auth/login', icon: 'Logout' },
   ],

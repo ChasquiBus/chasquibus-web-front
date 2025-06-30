@@ -17,6 +17,7 @@ export interface Ruta {
   estado?: boolean;
   diasOperacion: DiaOperacion[];
   resolucionUrl?: string;
+  esDirecto?: boolean;
 }
 
 export interface CreateRutaDto {
@@ -28,6 +29,7 @@ export interface CreateRutaDto {
   estado?: boolean;
   diasOperacion: DiaOperacion[];
   file: File;
+  esDirecto?: boolean;
 }
 
 export interface UpdateRutaDto {
@@ -39,6 +41,7 @@ export interface UpdateRutaDto {
   estado?: boolean;
   diasOperacion?: DiaOperacion[];
   file?: File;
+  esDirecto?: boolean;
 }
 
 function getToken() {
@@ -78,6 +81,7 @@ export async function createRuta(data: CreateRutaDto): Promise<Ruta> {
   if (data.fechaIniVigencia) formData.append('fechaIniVigencia', data.fechaIniVigencia);
   if (data.fechaFinVigencia) formData.append('fechaFinVigencia', data.fechaFinVigencia);
   if (data.estado !== undefined) formData.append('estado', String(data.estado));
+  if (data.esDirecto !== undefined) formData.append('esDirecto', String(data.esDirecto));
   formData.append('diasOperacion', JSON.stringify(data.diasOperacion));
   formData.append('file', data.file);
   const res = await axios.post(`${API_URL}/rutas`, formData, {
@@ -98,6 +102,7 @@ export async function updateRuta(id: number, data: UpdateRutaDto): Promise<Ruta>
   if (data.fechaIniVigencia) formData.append('fechaIniVigencia', data.fechaIniVigencia);
   if (data.fechaFinVigencia) formData.append('fechaFinVigencia', data.fechaFinVigencia);
   if (data.estado !== undefined) formData.append('estado', String(data.estado));
+  if (data.esDirecto !== undefined) formData.append('esDirecto', String(data.esDirecto));
   if (data.diasOperacion) formData.append('diasOperacion', JSON.stringify(data.diasOperacion));
   if (data.file) formData.append('file', data.file);
   const res = await axios.patch(`${API_URL}/rutas/${id}`, formData, {
