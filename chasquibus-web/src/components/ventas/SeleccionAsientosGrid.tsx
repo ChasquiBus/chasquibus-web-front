@@ -37,43 +37,45 @@ const SeleccionAsientosGrid: React.FC<SeleccionAsientosGridProps> = ({ posicione
         <Typography variant="h6" sx={{ mb: 1, textAlign: 'center', fontWeight: 700 }}>{`PISO ${piso}`}</Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${maxCol}, 22px)`, gap: '0px', justifyContent: 'center' }}>
           {[...Array(maxFila)].map((_, filaIdx) => (
-            [...Array(maxCol)].map((_, colIdx) => {
-              const fila = filaIdx + 1;
-              const col = colIdx + 1;
-              const asiento = asientosPiso.find(a => a.fila === fila && a.columna === col);
-              if (!asiento) {
-                return <Box key={`f${fila}c${col}-empty`} sx={{ width: 22, height: 22, background: 'transparent', m: 0, p: 0 }} />;
-              }
-              return (
-                <Box
-                  key={`f${fila}c${col}p${asiento.piso}n${asiento.numeroAsiento}`}
-                  sx={{
-                    width: 22,
-                    height: 22,
-                    background: isSelected(asiento) ? '#1976d2' : (asiento.tipoAsiento === 'VIP' ? '#FFD700' : '#4caf50'),
-                    color: isSelected(asiento) ? '#fff' : '#222',
-                    fontWeight: 700,
-                    fontSize: 11,
-                    borderRadius: 1,
-                    boxShadow: 1,
-                    p: 0,
-                    border: isSelected(asiento) ? '2px solid #1976d2' : undefined,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: asiento.ocupado && !isSelected(asiento) ? 'not-allowed' : 'pointer',
-                    opacity: asiento.ocupado && !isSelected(asiento) ? 0.4 : 1,
-                    userSelect: 'none',
-                    m: 0
-                  }}
-                  onClick={() => {
-                    if (!asiento.ocupado || isSelected(asiento)) handleSelect(asiento);
-                  }}
-                >
-                  {asiento.numeroAsiento}
-                </Box>
-              );
-            })
+            <React.Fragment key={`fila-${filaIdx}`}>
+              {[...Array(maxCol)].map((_, colIdx) => {
+                const fila = filaIdx + 1;
+                const col = colIdx + 1;
+                const asiento = asientosPiso.find(a => a.fila === fila && a.columna === col);
+                if (!asiento) {
+                  return <Box key={`f${fila}c${col}-empty-${colIdx}`} sx={{ width: 22, height: 22, background: 'transparent', m: 0, p: 0 }} />;
+                }
+                return (
+                  <Box
+                    key={`f${fila}c${col}p${asiento.piso}n${asiento.numeroAsiento}`}
+                    sx={{
+                      width: 22,
+                      height: 22,
+                      background: isSelected(asiento) ? '#1976d2' : (asiento.tipoAsiento === 'VIP' ? '#FFD700' : '#4caf50'),
+                      color: isSelected(asiento) ? '#fff' : '#222',
+                      fontWeight: 700,
+                      fontSize: 11,
+                      borderRadius: 1,
+                      boxShadow: 1,
+                      p: 0,
+                      border: isSelected(asiento) ? '2px solid #1976d2' : undefined,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: asiento.ocupado && !isSelected(asiento) ? 'not-allowed' : 'pointer',
+                      opacity: asiento.ocupado && !isSelected(asiento) ? 0.4 : 1,
+                      userSelect: 'none',
+                      m: 0
+                    }}
+                    onClick={() => {
+                      if (!asiento.ocupado || isSelected(asiento)) handleSelect(asiento);
+                    }}
+                  >
+                    {asiento.numeroAsiento}
+                  </Box>
+                );
+              })}
+            </React.Fragment>
           ))}
         </Box>
       </Box>

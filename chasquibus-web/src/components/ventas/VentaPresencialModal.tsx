@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Stepper, Step, StepLabel, Button, DialogActions, TextField, MenuItem, CircularProgress, Autocomplete } from "@mui/material";
+import { Box, Typography, Stepper, Step, StepLabel, Button, TextField, MenuItem, CircularProgress, Autocomplete } from "@mui/material";
 import { Ruta, getRutas } from '@/services/rutas';
 import { busesService } from '@/services/buses';
 import { Bus } from '@/types/bus';
@@ -10,11 +10,6 @@ import SeleccionAsientosGrid from '@/components/ventas/SeleccionAsientosGrid';
 import { getTarifasParadasByRutaId, TarifaParada } from '@/services/tarifasParadas';
 import { getAllDescuentos, Descuento } from '@/services/descuentos';
 import { createVentaPresencial } from '@/services/ventas';
-
-interface VentaPresencialModalProps {
-  open: boolean;
-  onClose: () => void;
-}
 
 const steps = [
   "Selecciona Ruta",
@@ -27,7 +22,11 @@ const steps = [
 // Extiende el tipo para incluir 'ocupado' en el contexto local
 type PosicionAsientoConOcupado = PosicionAsiento & { ocupado?: boolean };
 
-const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClose }) => {
+interface VentaPresencialModalProps {
+  onVentaExitosa?: () => void;
+}
+
+const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExitosa }) => {
   const [activeStep, setActiveStep] = React.useState(0);
   // Paso 1: rutas
   const [rutas, setRutas] = useState<Ruta[]>([]);
@@ -50,7 +49,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
   // Paso 4: tarifas y descuentos
   const [tarifas, setTarifas] = useState<TarifaParada[]>([]);
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
-  const [boletos, setBoletos] = useState<any[]>([]);
+  const [boletos, setBoletos] = useState<Record<string, any>>({});
 
   // Paso 5: Resumen y confirmación
   const [loadingVenta, setLoadingVenta] = useState(false);
@@ -112,6 +111,24 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
     }
   }, [activeStep, rutaSeleccionada]);
 
+  // Sincroniza el objeto de boletos con los asientos seleccionados
+  useEffect(() => {
+    setBoletos(prev => {
+      const nuevos = { ...prev };
+      // Agrega un objeto vacío solo si no existe para ese asiento
+      asientosSeleccionados.forEach(asiento => {
+        const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
+        if (!Object.prototype.hasOwnProperty.call(nuevos, key)) nuevos[key] = {};
+      });
+      // Elimina boletos de asientos que ya no están seleccionados
+      Object.keys(nuevos).forEach(key => {
+        const existe = asientosSeleccionados.some(asiento => key === `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`);
+        if (!existe) delete nuevos[key];
+      });
+      return nuevos;
+    });
+  }, [JSON.stringify(asientosSeleccionados)]);
+
   // Función para obtener el nombre de la parada por ID
   const getNombreParada = (id: number) => paradas.find(p => p.id === id)?.nombreParada || id;
 
@@ -147,11 +164,11 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
     const porcentajeDesc = descuento ? Number(descuento.porcentaje) : 0;
     // Cálculos
     const totalSinDesc = valorTarifa;
-    const totalDesc = porcentajeDesc ? (valorTarifa * porcentajeDesc) / 100 : 0;
+    const totalDesc = porcentajeDesc ? (valorTarifa * porcentajeDesc) : 0;
     const totalFinal = valorTarifa - totalDesc;
     return (
       <Box sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
-        <Typography variant="subtitle1">Asiento {asiento.numeroAsiento}</Typography>
+        <Typography variant="subtitle1" sx={{ color: '#000' }}>Asiento {asiento.numeroAsiento}</Typography>
         <TextField
           label="Nombre"
           value={value.nombre || ''}
@@ -184,23 +201,28 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
         >
           <MenuItem value="">Sin descuento</MenuItem>
           {descuentos.map(d => (
-            <MenuItem key={d.id} value={d.id}>{d.tipoDescuento} - {d.porcentaje}%</MenuItem>
+            <MenuItem key={d.id} value={d.id}>{d.tipoDescuento} - {(Number(d.porcentaje) * 100).toFixed(0)}%</MenuItem>
           ))}
         </TextField>
         <Box sx={{ mt: 1 }}>
-          <Typography variant="body2">Total sin descuento: ${totalSinDesc.toFixed(2)}</Typography>
-          <Typography variant="body2">Descuento: -${totalDesc.toFixed(2)}</Typography>
-          <Typography variant="subtitle2">Total a pagar: ${totalFinal.toFixed(2)}</Typography>
+          <Typography variant="body2" sx={{ color: '#000' }}>Total sin descuento: ${totalSinDesc.toFixed(2)}</Typography>
+          <Typography variant="body2" sx={{ color: '#000' }}>Descuento: -${totalDesc.toFixed(2)}</Typography>
+          <Typography variant="subtitle2" sx={{ color: '#000' }}>Total a pagar: ${totalFinal.toFixed(2)}</Typography>
         </Box>
       </Box>
     );
   }
 
-  const formulariosCompletos = boletos.length === asientosSeleccionados.length &&
-    boletos.every(b => b && b.nombre && b.cedula && b.tarifaId);
+  const formulariosCompletos =
+    Object.keys(boletos).length === asientosSeleccionados.length &&
+    asientosSeleccionados.every(asiento => {
+      const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
+      const b = boletos[key];
+      return b && b.nombre && b.cedula && b.tarifaId;
+    });
 
   // Paso 5: Resumen y confirmación
-  const totalGeneral = boletos.reduce((acc, b) => acc + Number(b.totalPorPer || 0), 0);
+  const totalGeneral = Object.values(boletos).reduce((acc, b) => acc + Number(b.totalPorPer || 0), 0);
 
   async function handleConfirmarVenta() {
     setLoadingVenta(true);
@@ -220,11 +242,15 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
       const venta = {
         hojaTrabajoId: hojaSeleccionada.id,
         busId: hojaSeleccionada.idBus,
-        boletos,
+        boletos: asientosSeleccionados.map(asiento => {
+          const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
+          return boletos[key];
+        }),
         posiciones
       };
       await createVentaPresencial(venta);
       setVentaExitosa(true);
+      if (onVentaExitosa) onVentaExitosa();
       // --- ACTUALIZAR CONFIGURACIÓN GENERAL DE ASIENTOS ---
       if (idConfigAsientos && configAsientosOriginal.length > 0) {
         const nuevaConfig = (configAsientosOriginal as PosicionAsientoConOcupado[]).map(asiento => {
@@ -256,7 +282,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
       {/* Paso 1: Selección de ruta */}
       {activeStep === 0 && (
         <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>Selecciona la ruta</Typography>
+          <Typography variant="h6" sx={{ mb: 1, color: '#000' }}>Selecciona la ruta</Typography>
           {loadingRutas || loadingParadas ? <CircularProgress size={28} /> : (
             <Autocomplete
               options={rutas}
@@ -272,7 +298,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
       {/* Paso 2: Selección de hoja de trabajo */}
       {activeStep === 1 && (
         <Box sx={{ maxWidth: 600, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>Selecciona la hoja de trabajo</Typography>
+          <Typography variant="h6" sx={{ mb: 1, color: '#000' }}>Selecciona la hoja de trabajo</Typography>
           {loadingHojas ? <CircularProgress size={28} /> : (
             <Autocomplete
               options={hojasFiltradas}
@@ -294,7 +320,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
       {/* Paso 3: Selección de asientos */}
       {activeStep === 2 && busDeHoja && (
         <Box sx={{ maxWidth: 900, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ mb: 1, textAlign: 'center' }}>Selecciona los asientos</Typography>
+          <Typography variant="h6" sx={{ mb: 1, color: '#000', textAlign: 'center' }}>Selecciona los asientos</Typography>
           {loadingAsientos ? <CircularProgress size={28} /> : (
             <SeleccionAsientosGrid
               posiciones={configAsientos}
@@ -308,64 +334,72 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
       {/* Paso 4: Datos de pasajeros */}
       {activeStep === 3 && (
         <Box sx={{ maxWidth: 700, mx: 'auto' }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Datos de los pasajeros</Typography>
-          {asientosSeleccionados.map((asiento, idx) => (
-            <FormularioPasajero
-              key={asiento.numeroAsiento}
-              asiento={asiento}
-              value={boletos[idx] || {}}
-              onChange={val => {
-                setBoletos(prev => {
-                  const nuevos = [...prev];
-                  // Mantener los valores anteriores y solo actualizar el campo editado
-                  const actual = { ...nuevos[idx], ...val };
-                  // Calcular totales
-                  const tarifa = tarifas.find(t => t.id === actual.tarifaId);
-                  const valorTarifa = tarifa ? Number(tarifa.valor) : 0;
-                  const descuento = descuentos.find(d => d.id === actual.descuentoId);
-                  const porcentajeDesc = descuento ? Number(descuento.porcentaje) : 0;
-                  const totalSinDescPorPers = valorTarifa.toFixed(2);
-                  const totalDescPorPers = (valorTarifa * porcentajeDesc / 100).toFixed(2);
-                  const totalPorPer = (valorTarifa - (valorTarifa * porcentajeDesc / 100)).toFixed(2);
-                  nuevos[idx] = {
-                    ...actual,
-                    asientoNumero: asiento.numeroAsiento,
-                    totalSinDescPorPers,
-                    totalDescPorPers,
-                    totalPorPer,
-                  };
-                  return nuevos;
-                });
-              }}
-              tarifas={tarifas}
-              descuentos={descuentos}
-            />
-          ))}
+          <Typography variant="h6" sx={{ mb: 2, color: '#000' }}>Datos de los pasajeros</Typography>
+          {asientosSeleccionados.map(asiento => {
+            const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
+            return (
+              <FormularioPasajero
+                key={key}
+                asiento={asiento}
+                value={boletos[key] || {}}
+                onChange={val => {
+                  setBoletos(prev => {
+                    // Solo actualiza el campo editado, no reemplaces el objeto completo
+                    const nuevos = { ...prev };
+                    const actual = { ...nuevos[key], ...val };
+                    // Calcular totales
+                    const tarifa = tarifas.find(t => t.id === actual.tarifaId);
+                    const valorTarifa = tarifa ? Number(tarifa.valor) : 0;
+                    const descuento = descuentos.find(d => d.id === actual.descuentoId);
+                    const porcentajeDesc = descuento ? Number(descuento.porcentaje) : 0;
+                    const totalSinDescPorPers = valorTarifa.toFixed(2);
+                    const totalDescPorPers = (valorTarifa * porcentajeDesc).toFixed(2);
+                    const totalPorPer = (valorTarifa - (valorTarifa * porcentajeDesc)).toFixed(2);
+                    nuevos[key] = {
+                      ...actual,
+                      asientoNumero: asiento.numeroAsiento,
+                      totalSinDescPorPers,
+                      totalDescPorPers,
+                      totalPorPer,
+                    };
+                    return nuevos;
+                  });
+                }}
+                tarifas={tarifas}
+                descuentos={descuentos}
+              />
+            );
+          })}
         </Box>
       )}
       {/* Paso 5: Resumen y confirmación */}
       {activeStep === 4 && (
         <Box sx={{ maxWidth: 700, mx: 'auto' }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Resumen y confirmación</Typography>
-          {boletos.map((boleto, idx) => (
-            <Box key={idx} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
-              <Typography variant="subtitle1">Asiento {boleto.asientoNumero}</Typography>
-              <Typography variant="body2">Nombre: {boleto.nombre}</Typography>
-              <Typography variant="body2">Cédula: {boleto.cedula}</Typography>
-              <Typography variant="body2">Tarifa: ${boleto.totalSinDescPorPers}</Typography>
-              <Typography variant="body2">Descuento: -${boleto.totalDescPorPers}</Typography>
-              <Typography variant="body2">Total: ${boleto.totalPorPer}</Typography>
-            </Box>
-          ))}
+          <Typography variant="h6" sx={{ mb: 2, color: '#000' }}>Resumen y confirmación</Typography>
+          {asientosSeleccionados.map(asiento => {
+            const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
+            const boleto = boletos[key] || {};
+            return (
+              <Box key={key} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
+                <Typography variant="subtitle1" sx={{ color: '#000' }}>Asiento {boleto.asientoNumero}</Typography>
+                <Typography variant="body2" sx={{ color: '#000' }}>Nombre: {boleto.nombre}</Typography>
+                <Typography variant="body2" sx={{ color: '#000' }}>Cédula: {boleto.cedula}</Typography>
+                <Typography variant="body2" sx={{ color: '#000' }}>Tarifa: ${boleto.totalSinDescPorPers}</Typography>
+                <Typography variant="body2" sx={{ color: '#000' }}>Descuento: -${boleto.totalDescPorPers}</Typography>
+                <Typography variant="body2" sx={{ color: '#000' }}>Total: ${boleto.totalPorPer}</Typography>
+              </Box>
+            );
+          })}
           <Box sx={{ mt: 2, p: 2, borderTop: '1px solid #ccc' }}>
-            <Typography variant="h6">Total a pagar: ${totalGeneral.toFixed(2)}</Typography>
+            <Typography variant="h6" sx={{ color: '#000' }}>Total a pagar: ${totalGeneral.toFixed(2)}</Typography>
           </Box>
-          {errorVenta && <Typography color="error" sx={{ mt: 2 }}>{errorVenta}</Typography>}
-          {ventaExitosa && <Typography color="success.main" sx={{ mt: 2 }}>¡Venta registrada exitosamente!</Typography>}
+          {errorVenta && <Typography color="error" sx={{ mt: 2, color: '#000' }}>{errorVenta}</Typography>}
+          {ventaExitosa && <Typography color="success.main" sx={{ mt: 2, color: '#000' }}>¡Venta registrada exitosamente!</Typography>}
         </Box>
       )}
-      <DialogActions sx={{ mt: 4 }}>
-        <Button onClick={onClose} color="secondary" disabled={loadingVenta}>Cancelar</Button>
+      {/* Botones de navegación al final, fuera de DialogActions */}
+      <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Button onClick={() => window.confirm('¿Seguro que deseas cancelar la venta?') && window.location.reload()} color="secondary" disabled={loadingVenta}>Cancelar</Button>
         {activeStep > 0 && <Button onClick={() => setActiveStep(s => s - 1)} disabled={loadingVenta}>Atrás</Button>}
         {activeStep < steps.length - 1 && <Button variant="contained" onClick={() => setActiveStep(s => s + 1)} disabled={
           (activeStep === 0 && !rutaSeleccionada) ||
@@ -378,7 +412,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ open, onClo
             {loadingVenta ? 'Procesando...' : 'Confirmar venta'}
           </Button>
         }
-      </DialogActions>
+      </Box>
     </Box>
   );
 };
