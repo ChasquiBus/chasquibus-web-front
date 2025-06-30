@@ -24,7 +24,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 interface BusesTableProps {
   buses: Bus[];
   onEdit: (bus: Bus) => void;
-  onDelete: (id: number) => void;
+  onDelete?: (id: number) => void;
 }
 
 export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps) {
@@ -119,6 +119,7 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
                       >
                         <EditIcon />
                       </IconButton>
+                      {onDelete && (
                       <IconButton
                         size="small"
                         onClick={() => onDelete(bus.id)}
@@ -126,6 +127,7 @@ export default function BusesTable({ buses, onEdit, onDelete }: BusesTableProps)
                       >
                         <DeleteIcon />
                       </IconButton>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>

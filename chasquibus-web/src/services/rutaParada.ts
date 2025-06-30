@@ -93,4 +93,6 @@ export async function getRutaParadasByRutaId(rutaId: number): Promise<RutaParada
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data as RutaParada[];
-} 
+}
+
+// NOTA: Si la ruta tiene esDirecto=true, no se deben crear paradas intermedias para esa ruta. 

@@ -35,6 +35,7 @@ export default function RutasPage() {
     estado: true,
     diasOperacion: [],
     file: null,
+    esDirecto: false,
   });
   const [diasSeleccionados, setDiasSeleccionados] = useState<number[]>([]);
   const [snackbar, setSnackbar] = useState<{open: boolean, msg: string, type: 'success'|'error'}>({open: false, msg: '', type: 'success'});
@@ -73,11 +74,12 @@ export default function RutasPage() {
         estado: ruta.estado ?? true,
         diasOperacion: ruta.diasOperacion || [],
         file: null,
+        esDirecto: ruta.esDirecto ?? false,
       });
       setDiasSeleccionados(ruta.diasOperacion.map(d => d.diaId));
     } else {
       setEditRuta(null);
-      setForm({ paradaOrigenId: '', paradaDestinoId: '', prioridad: '', fechaIniVigencia: '', fechaFinVigencia: '', estado: true, diasOperacion: [], file: null });
+      setForm({ paradaOrigenId: '', paradaDestinoId: '', prioridad: '', fechaIniVigencia: '', fechaFinVigencia: '', estado: true, diasOperacion: [], file: null, esDirecto: false });
       setDiasSeleccionados([]);
     }
     setModalOpen(true);
@@ -86,7 +88,7 @@ export default function RutasPage() {
   const handleCloseModal = () => {
     setModalOpen(false);
     setEditRuta(null);
-    setForm({ paradaOrigenId: '', paradaDestinoId: '', prioridad: '', fechaIniVigencia: '', fechaFinVigencia: '', estado: true, diasOperacion: [], file: null });
+    setForm({ paradaOrigenId: '', paradaDestinoId: '', prioridad: '', fechaIniVigencia: '', fechaFinVigencia: '', estado: true, diasOperacion: [], file: null, esDirecto: false });
     setDiasSeleccionados([]);
   };
 
@@ -230,7 +232,7 @@ export default function RutasPage() {
                   <TableCell>{ruta.estado ? 'Activa' : 'Inactiva'}</TableCell>
                   <TableCell>
                     <IconButton color="primary" onClick={() => handleOpenModal(ruta)}><EditIcon /></IconButton>
-                    <Button variant="outlined" color="primary" size="small" onClick={() => abrirGestionParadas(ruta)} sx={{ ml: 1 }}>
+                    <Button variant="outlined" color="primary" size="small" onClick={() => abrirGestionParadas(ruta)} sx={{ ml: 1 }} disabled={ruta.esDirecto}>
                       Gestionar paradas
                     </Button>
                     <IconButton color="error" onClick={() => setDeleteId(ruta.id)}><DeleteIcon /></IconButton>
@@ -318,6 +320,15 @@ export default function RutasPage() {
               control={<Switch checked={form.estado} onChange={e => setForm((prev: any) => ({ ...prev, estado: e.target.checked }))} />}
               label="¿Activa?"
             />
+            <FormControlLabel
+              control={<Switch checked={form.esDirecto} onChange={e => setForm((prev: any) => ({ ...prev, esDirecto: e.target.checked }))} />}
+              label="¿Es ruta directa?"
+            />
+            {form.esDirecto && (
+              <Box sx={{ color: 'orange', fontWeight: 500, mb: 1 }}>
+                Esta ruta es directa, no se podrán gestionar paradas intermedias.
+              </Box>
+            )}
             <Button variant="contained" component="label">
               {form.file ? form.file.name : 'Subir PDF de Resolución'}
               <input type="file" accept="application/pdf" hidden onChange={handleChange} name="file" />

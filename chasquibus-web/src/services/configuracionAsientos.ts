@@ -94,7 +94,7 @@ export const configuracionAsientosService = {
         piso: p.piso,
         tipoAsiento: p.tipoAsiento,
         numeroAsiento: p.numeroAsiento,
-        ocupado: false // siempre enviar false por defecto
+        ocupado: p.ocupado ?? false
       }));
     }
     const response = await fetch(`${API_URL}/configuracion-asientos/${id}`, {

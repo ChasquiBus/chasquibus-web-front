@@ -13,13 +13,16 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
+    "@mui/x-data-grid": "^8.6.0",
     "@types/axios": "^0.9.36",
     "@types/yup": "^0.29.14",
     "axios": "^1.10.0",
+    "date-fns": "^4.1.0",
     "formik": "^2.4.6",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "recharts": "^3.0.2",
     "yup": "^1.6.1"
   },
   "devDependencies": {
