@@ -19,7 +19,8 @@ export default function VentasPage() {
     return hoja ? hoja.codigo : `ID: ${hojaTrabajoId}`;
   };
 
-  useEffect(() => {
+  // --- NUEVO: función para recargar datos ---
+  const fetchData = () => {
     // Cargar ventas
     setLoadingVentas(true);
     setErrorVentas(null);
@@ -37,6 +38,10 @@ export default function VentasPage() {
       .then(setHojasTrabajo)
       .catch((err: any) => console.error('Error al cargar hojas de trabajo:', err))
       .finally(() => setLoadingHojas(false));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   return (
@@ -49,7 +54,7 @@ export default function VentasPage() {
       </Box>
       {/* Modal de venta presencial */}
       <Dialog open={openVentaModal} onClose={() => setOpenVentaModal(false)} maxWidth="md" fullWidth>
-        <VentaPresencialModal onVentaExitosa={() => setOpenVentaModal(false)} />
+        <VentaPresencialModal onVentaExitosa={() => { fetchData(); setOpenVentaModal(false); }} />
       </Dialog>
       {/* Tabla de ventas presenciales */}
       <Box sx={{ maxWidth: 1000, mx: "auto", my: 4 }}>
