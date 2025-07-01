@@ -8,6 +8,10 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import MuiAlert from '@mui/material/Alert';
 import { Frequency } from '@/services/frequencies';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
 interface FrequencyFormProps {
   open: boolean;
@@ -55,8 +59,10 @@ const FrequencyForm: React.FC<FrequencyFormProps> = ({ open, onClose, onSubmit, 
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value + ':00' });
+  const handleTimeChange = (name: string, value: any) => {
+    if (value && dayjs.isDayjs(value)) {
+      setForm({ ...form, [name]: value.format('HH:mm:ss') });
+    }
   };
 
   const handleSubmit = () => {
@@ -81,24 +87,24 @@ const FrequencyForm: React.FC<FrequencyFormProps> = ({ open, onClose, onSubmit, 
             <MenuItem key={ruta.id} value={ruta.id}>{ruta.nombre}</MenuItem>
           ))}
         </TextField>
-        <TextField
-          label="Hora de Salida"
-          name="horaSalidaProg"
-          type="time"
-          value={form.horaSalidaProg}
-          onChange={handleTimeChange}
-          inputProps={{ step: 1 }}
-          fullWidth
-        />
-        <TextField
-          label="Hora de Llegada"
-          name="horaLlegadaProg"
-          type="time"
-          value={form.horaLlegadaProg}
-          onChange={handleTimeChange}
-          inputProps={{ step: 1 }}
-          fullWidth
-        />
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <TimePicker
+            label="Hora de Salida"
+            value={form.horaSalidaProg ? dayjs(form.horaSalidaProg, 'HH:mm:ss') : null}
+            onChange={value => handleTimeChange('horaSalidaProg', value)}
+            ampm={false}
+            format="HH:mm"
+            slotProps={{ textField: { fullWidth: true } }}
+          />
+          <TimePicker
+            label="Hora de Llegada"
+            value={form.horaLlegadaProg ? dayjs(form.horaLlegadaProg, 'HH:mm:ss') : null}
+            onChange={value => handleTimeChange('horaLlegadaProg', value)}
+            ampm={false}
+            format="HH:mm"
+            slotProps={{ textField: { fullWidth: true } }}
+          />
+        </LocalizationProvider>
         {error && <MuiAlert severity="error">{error}</MuiAlert>}
       </DialogContent>
       <DialogActions>
