@@ -85,6 +85,31 @@ const ChoferesPage = () => {
       setError('Falta el token de autenticación o la ID de la cooperativa.');
       return;
     }
+    // Validación de duplicados
+    const emailExists = choferes.some(c => c.usuario.email === values.email);
+    const cedulaExists = choferes.some(c => c.usuario.cedula === values.cedula);
+    const licenciaExists = choferes.some(c => c.numeroLicencia === values.numeroLicencia);
+    if (emailExists) {
+      setError('Ya existe un chofer con ese correo electrónico.');
+      setSnackbarMessage('Ya existe un chofer con ese correo electrónico.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+    if (cedulaExists) {
+      setError('Ya existe un chofer con esa cédula.');
+      setSnackbarMessage('Ya existe un chofer con esa cédula.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+    if (licenciaExists) {
+      setError('Ya existe un chofer con ese número de licencia.');
+      setSnackbarMessage('Ya existe un chofer con ese número de licencia.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
