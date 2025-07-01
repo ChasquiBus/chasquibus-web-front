@@ -5,7 +5,7 @@ import TarifaForm from '@/components/tarifas/TarifaForm';
 import { getTarifasParadas, createTarifaParada, updateTarifaParada, deleteTarifaParada, TarifaParada, CreateTarifaParadaDto, UpdateTarifaParadaDto } from '@/services/tarifasParadas';
 import { getRutas, Ruta } from '@/services/rutas';
 import { getParadas, Parada } from '@/services/paradas';
-import { Button, Box, Snackbar, Alert, Typography, MenuItem, TextField, Grid } from '@mui/material';
+import { Button, Box, Snackbar, Alert, Typography, MenuItem, TextField, Grid, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 export default function TarifasPage() {
   const [tarifas, setTarifas] = useState<TarifaParada[]>([]);
@@ -20,6 +20,7 @@ export default function TarifasPage() {
   const [filtroOrigen, setFiltroOrigen] = useState('');
   const [filtroDestino, setFiltroDestino] = useState('');
   const [filtroTipoAsiento, setFiltroTipoAsiento] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
 
   useEffect(() => {
     cargarDatos();
@@ -52,17 +53,22 @@ export default function TarifasPage() {
     setModalOpen(true);
   };
 
-  const handleEliminar = async (id: number) => {
-    if (!window.confirm('¿Seguro que deseas eliminar esta tarifa?')) return;
+  const handleEliminar = (id: number) => {
+    setConfirmDialog({ open: true, id });
+  };
+
+  const confirmarEliminar = async () => {
+    if (!confirmDialog.id) return;
     setLoading(true);
     try {
-      await deleteTarifaParada(id);
+      await deleteTarifaParada(confirmDialog.id);
       setSnackbar({ open: true, message: 'Tarifa eliminada correctamente', severity: 'success' });
       cargarDatos();
     } catch (e) {
       setSnackbar({ open: true, message: 'Error al eliminar tarifa', severity: 'error' });
     }
     setLoading(false);
+    setConfirmDialog({ open: false, id: null });
   };
 
   const handleGuardar = async (data: CreateTarifaParadaDto | UpdateTarifaParadaDto) => {
@@ -104,9 +110,13 @@ export default function TarifasPage() {
           sx={{ minWidth: 180, background: '#fff' }}
         >
           <MenuItem value="">Todas</MenuItem>
-          {rutas.map(r => (
-            <MenuItem key={r.id} value={r.id}>{`Ruta ${r.id}`}</MenuItem>
-          ))}
+          {rutas.map(r => {
+            const origen = paradas.find(p => p.id === r.paradaOrigenId)?.nombreParada || '';
+            const destino = paradas.find(p => p.id === r.paradaDestinoId)?.nombreParada || '';
+            return (
+              <MenuItem key={r.id} value={r.id}>{`Ruta ${r.id} (${origen} - ${destino})`}</MenuItem>
+            );
+          })}
         </TextField>
         <TextField
           select
@@ -158,7 +168,7 @@ export default function TarifasPage() {
       <TarifasTable tarifas={tarifasFiltradas} paradas={paradas} onEdit={handleEditar} onDelete={handleEliminar} />
       <TarifaForm
         open={modalOpen}
-        rutas={rutas.map(r => ({ id: r.id, nombre: `Ruta ${r.id}` }))}
+        rutas={rutas.map(r => ({ id: r.id, origenId: r.paradaOrigenId, destinoId: r.paradaDestinoId }))}
         paradas={paradas}
         initialValues={editTarifa || undefined}
         onSave={handleGuardar}
@@ -175,6 +185,14 @@ export default function TarifasPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+      <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, id: null })}>
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>¿Seguro que deseas eliminar esta tarifa?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialog({ open: false, id: null })} color="inherit">Cancelar</Button>
+          <Button onClick={confirmarEliminar} color="error" variant="contained">Eliminar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 } 
