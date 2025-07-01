@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, MenuItem, Select, InputLabel, FormControl, Checkbox, ListItemText, FormControlLabel, Switch, DialogActions } from '@mui/material';
+import { Box, Button, TextField, MenuItem, Select, InputLabel, FormControl, Checkbox, ListItemText, FormControlLabel, Switch, DialogActions, Snackbar, Alert } from '@mui/material';
 import { Parada } from '@/services/paradas';
 import { DiaOperacion } from '@/services/rutas';
 
@@ -12,6 +12,8 @@ const DIAS_SEMANA = [
   { diaId: 6, nombre: 'Sábado' },
   { diaId: 7, nombre: 'Domingo' },
 ];
+
+const TODOS_IDS = DIAS_SEMANA.map(d => d.diaId);
 
 interface RutaFormProps {
   paradas: Parada[];
@@ -34,6 +36,7 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
     esDirecto: false,
   });
   const [diasSeleccionados, setDiasSeleccionados] = useState<number[]>([]);
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     if (rutaInicial) {
@@ -68,7 +71,11 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
 
   const handleDiasChange = (event: any) => {
     const value = event.target.value;
-    setDiasSeleccionados(typeof value === 'string' ? value.split(',') : value);
+    if (value.includes('todos')) {
+      setDiasSeleccionados(TODOS_IDS);
+    } else {
+      setDiasSeleccionados(typeof value === 'string' ? value.split(',') : value);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -85,6 +92,13 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
       file: form.file,
     };
     onSubmit(payload);
+    setSuccessMsg(rutaInicial ? 'Ruta actualizada correctamente' : 'Ruta creada correctamente');
+  };
+
+  // Calcular la fecha mínima permitida (hoy)
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
   };
 
   return (
@@ -97,7 +111,7 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
           onChange={handleChange}
           label="Parada Origen"
         >
-          {paradas.map((p) => (
+          {paradas.filter(p => p.esTerminal).map((p) => (
             <MenuItem key={p.id} value={p.id}>{p.nombreParada}</MenuItem>
           ))}
         </Select>
@@ -110,7 +124,7 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
           onChange={handleChange}
           label="Parada Destino"
         >
-          {paradas.map((p) => (
+          {paradas.filter(p => p.esTerminal).map((p) => (
             <MenuItem key={p.id} value={p.id}>{p.nombreParada}</MenuItem>
           ))}
         </Select>
@@ -121,8 +135,15 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
           multiple
           value={diasSeleccionados}
           onChange={handleDiasChange}
-          renderValue={(selected) => DIAS_SEMANA.filter(d => selected.includes(d.diaId)).map(d => d.nombre).join(', ')}
+          renderValue={(selected) => {
+            if (selected.length === TODOS_IDS.length) return 'Todos';
+            return DIAS_SEMANA.filter(d => selected.includes(d.diaId)).map(d => d.nombre).join(', ');
+          }}
         >
+          <MenuItem value="todos">
+            <Checkbox checked={diasSeleccionados.length === TODOS_IDS.length} />
+            <ListItemText primary="Todos" />
+          </MenuItem>
           {DIAS_SEMANA.map((dia) => (
             <MenuItem key={dia.diaId} value={dia.diaId}>
               <Checkbox checked={diasSeleccionados.indexOf(dia.diaId) > -1} />
@@ -131,14 +152,26 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
           ))}
         </Select>
       </FormControl>
-      <TextField
-        label="Prioridad"
-        name="prioridad"
-        type="number"
-        value={form.prioridad}
-        onChange={handleChange}
-        fullWidth
-      />
+      <FormControl fullWidth required>
+        <InputLabel id="prioridad-label">Prioridades</InputLabel>
+        <Select
+          labelId="prioridad-label"
+          name="prioridad"
+          value={form.prioridad}
+          onChange={handleChange}
+          label="Prioridad"
+          displayEmpty
+        >
+          <MenuItem value="" disabled>
+            Selecciona prioridad
+          </MenuItem>
+          <MenuItem value={1}>1</MenuItem>
+          <MenuItem value={2}>2</MenuItem>
+          <MenuItem value={3}>3</MenuItem>
+          <MenuItem value={4}>4</MenuItem>
+          <MenuItem value={5}>5</MenuItem>
+        </Select>
+      </FormControl>
       <TextField
         label="Fecha Inicio Vigencia"
         name="fechaIniVigencia"
@@ -147,6 +180,7 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
         onChange={handleChange}
         InputLabelProps={{ shrink: true }}
         fullWidth
+        inputProps={{ min: getMinDate() }}
       />
       <TextField
         label="Fecha Fin Vigencia"
@@ -156,6 +190,7 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
         onChange={handleChange}
         InputLabelProps={{ shrink: true }}
         fullWidth
+        inputProps={{ min: getMinDate() }}
       />
       <FormControlLabel
         control={<Switch checked={form.estado} onChange={e => setForm((prev: any) => ({ ...prev, estado: e.target.checked }))} />}
@@ -178,6 +213,11 @@ const RutaForm: React.FC<RutaFormProps> = ({ paradas, rutaInicial, onSubmit, onC
         <Button onClick={onCancel} color="secondary">Cancelar</Button>
         <Button type="submit" variant="contained" color="primary" disabled={loading}>{rutaInicial ? 'Actualizar' : 'Guardar'}</Button>
       </DialogActions>
+      <Snackbar open={!!successMsg} autoHideDuration={4000} onClose={() => setSuccessMsg('')} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert onClose={() => setSuccessMsg('')} severity="success" sx={{ width: '100%' }}>
+          {successMsg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
