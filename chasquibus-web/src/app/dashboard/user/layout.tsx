@@ -25,7 +25,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ minHeight: '100vh', background: 'white', display: 'flex', flexDirection: 'column', p: 0, m: 0, boxShadow: 'none', border: 'none', overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none', msOverflowStyle: 'none', '&::-webkit-scrollbar': { display: 'none' }, '&': { 'scrollbar-width': 'none', '-ms-overflow-style': 'none' } }}>
+      <Box sx={{ minHeight: '100vh', background: 'white', display: 'flex', flexDirection: 'column', p: 0, m: 0, boxShadow: 'none', border: 'none', overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'none', msOverflowStyle: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
         <Header />
         <Box sx={{ display: 'flex', flex: 1, maxWidth: '100vw', mx: 0, mt: 4, gap: 0, width: '100%', transition: 'all 0.3s' }}>
           {/* Botón para abrir el menú en mobile y desktop */}

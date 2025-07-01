@@ -216,6 +216,7 @@ export default function RutasPage() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell><b>ID</b></TableCell>
                 <TableCell><b>Origen</b></TableCell>
                 <TableCell><b>Destino</b></TableCell>
                 <TableCell><b>Prioridad</b></TableCell>
@@ -226,6 +227,7 @@ export default function RutasPage() {
             <TableBody>
               {rutas.map((ruta) => (
                 <TableRow key={ruta.id}>
+                  <TableCell>{ruta.id}</TableCell>
                   <TableCell>{paradas.find(p => p.id === ruta.paradaOrigenId)?.nombreParada || ruta.paradaOrigenId}</TableCell>
                   <TableCell>{paradas.find(p => p.id === ruta.paradaDestinoId)?.nombreParada || ruta.paradaDestinoId}</TableCell>
                   <TableCell>{ruta.prioridad ?? '-'}</TableCell>

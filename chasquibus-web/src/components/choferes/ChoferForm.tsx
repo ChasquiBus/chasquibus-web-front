@@ -250,7 +250,7 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
             id="numeroLicencia"
             name="numeroLicencia"
             label="Número de Licencia"
-            placeholder="Ej: 1234567890"
+            placeholder="Ej: 1724727225"
             value={formik.values.numeroLicencia}
             onChange={e => {
               setLicenciaEditada(true);
