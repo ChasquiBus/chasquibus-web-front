@@ -45,6 +45,7 @@ export const navigationByRole: RoleNavigation = {
     { label: 'Gestión de Frecuencias', href: '/dashboard/user/frequencies', icon: 'Schedule' },
     { label: 'Hojas de Trabajo', href: '/dashboard/user/route-sheet', icon: 'Assignment' },
     { label: 'Gestión Oficinistas', href: '/dashboard/user/oficinistas', icon: 'Work' },
+    { label: 'Boletos', href: '/dashboard/user/boletos', icon: 'ConfirmationNumber' },
     { label: 'Ventas', href: '/dashboard/user/ventas', icon: 'PointOfSale' },
     { label: 'Descuentos', href: '/dashboard/user/descuentos', icon: 'Percent' },
     { label: 'Configuración', href: '/dashboard/user/configuracion', icon: 'Settings' },
