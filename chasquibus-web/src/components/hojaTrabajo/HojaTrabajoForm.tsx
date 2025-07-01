@@ -16,14 +16,14 @@ interface HojaTrabajoFormProps {
   buses: { id: number; placa: string }[];
   choferes: { id: number; nombre: string }[];
   frecuencias: { id: number; horaSalidaProg: string; horaLlegadaProg: string; rutaId: number }[];
-  estados: EstadoHojaTrabajo[];
+  rutas?: { id: number; nombre: string; origen?: string; destino?: string }[];
   initialData?: Partial<HojaTrabajo>;
   loading?: boolean;
   error?: string;
 }
 
-const HojaTrabajoForm: React.FC<HojaTrabajoFormProps> = ({ open, onClose, onSubmit, buses, choferes, frecuencias, estados, initialData, loading, error }) => {
-  const [form, setForm] = useState<any>({ busId: '', choferId: '', frecDiaId: '', estado: 'programado', observaciones: '', fechaSalida: '' });
+const HojaTrabajoForm: React.FC<HojaTrabajoFormProps> = ({ open, onClose, onSubmit, buses, choferes, frecuencias, rutas, initialData, loading, error }) => {
+  const [form, setForm] = useState<any>({ busId: '', choferId: '', frecDiaId: '', observaciones: '', fechaSalida: '' });
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
@@ -32,18 +32,17 @@ const HojaTrabajoForm: React.FC<HojaTrabajoFormProps> = ({ open, onClose, onSubm
         busId: initialData.busId || '',
         choferId: initialData.choferId || '',
         frecDiaId: initialData.frecDiaId || '',
-        estado: initialData.estado || 'programado',
         observaciones: initialData.observaciones || '',
         fechaSalida: initialData.fechaSalida || '',
       });
     } else {
-      setForm({ busId: '', choferId: '', frecDiaId: '', estado: 'programado', observaciones: '', fechaSalida: '' });
+      setForm({ busId: '', choferId: '', frecDiaId: '', observaciones: '', fechaSalida: '' });
     }
     setFormError('');
   }, [initialData, open]);
 
   const validate = () => {
-    if (!form.busId || !form.choferId || !form.frecDiaId || !form.estado) {
+    if (!form.busId || !form.choferId || !form.frecDiaId) {
       setFormError('Todos los campos obligatorios deben estar completos.');
       return false;
     }
@@ -66,6 +65,13 @@ const HojaTrabajoForm: React.FC<HojaTrabajoFormProps> = ({ open, onClose, onSubm
     onSubmit(payload);
   };
 
+  // Obtener la fecha de hoy en formato yyyy-MM-dd
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const minDate = `${yyyy}-${mm}-${dd}`;
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{initialData ? 'Editar Hoja de Trabajo' : 'Nueva Hoja de Trabajo'}</DialogTitle>
@@ -82,16 +88,38 @@ const HojaTrabajoForm: React.FC<HojaTrabajoFormProps> = ({ open, onClose, onSubm
           ))}
         </TextField>
         <TextField select label="Frecuencia" name="frecDiaId" value={form.frecDiaId} onChange={handleChange} fullWidth>
-          {frecuencias.map((f) => (
-            <MenuItem key={f.id} value={f.id}>{`[${f.horaSalidaProg} - ${f.horaLlegadaProg}] Ruta ${f.rutaId}`}</MenuItem>
-          ))}
+          {frecuencias.map((f) => {
+            let origen = '';
+            let destino = '';
+            if (typeof rutas !== 'undefined') {
+              const ruta = rutas.find(r => r.id === f.rutaId);
+              if (ruta) {
+                // Si la ruta tiene nombre, origen y destino
+                if (ruta.origen && ruta.destino) {
+                  origen = ruta.origen;
+                  destino = ruta.destino;
+                } else if (ruta.nombre) {
+                  // Si solo tiene nombre
+                  const partes = ruta.nombre.split(':');
+                  if (partes.length > 1) {
+                    const od = partes[1].split('→');
+                    if (od.length === 2) {
+                      origen = od[0].trim();
+                      destino = od[1].trim();
+                    }
+                  }
+                }
+              }
+            }
+            return (
+              <MenuItem key={f.id} value={f.id}>
+                {`[${f.horaSalidaProg} - ${f.horaLlegadaProg}] Ruta ${f.rutaId}`}
+                {origen && destino ? ` (${origen} → ${destino})` : ''}
+              </MenuItem>
+            );
+          })}
         </TextField>
-        <TextField select label="Estado" name="estado" value={form.estado} onChange={handleChange} fullWidth>
-          {estados.map((e) => (
-            <MenuItem key={e} value={e}>{e}</MenuItem>
-          ))}
-        </TextField>
-        <TextField label="Fecha de Salida" name="fechaSalida" type="date" value={form.fechaSalida} onChange={handleChange} fullWidth InputLabelProps={{ shrink: true }} />
+        <TextField label="Fecha de Salida" name="fechaSalida" type="date" value={form.fechaSalida} onChange={handleChange} fullWidth InputLabelProps={{ shrink: true }} inputProps={{ min: minDate }} />
         <TextField label="Observaciones" name="observaciones" value={form.observaciones} onChange={handleChange} fullWidth multiline minRows={2} />
         {(error || formError) && <MuiAlert severity="error">{error || formError}</MuiAlert>}
       </DialogContent>

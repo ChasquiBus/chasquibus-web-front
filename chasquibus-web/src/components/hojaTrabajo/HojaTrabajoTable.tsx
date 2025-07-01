@@ -40,7 +40,6 @@ const HojaTrabajoTable: React.FC<HojaTrabajoTableProps> = ({ hojas, onEdit, onDe
             <TableRow>
               <TableCell>Bus</TableCell>
               <TableCell>Piso Doble</TableCell>
-              <TableCell>Asientos</TableCell>
               <TableCell>Ruta</TableCell>
               <TableCell>Código</TableCell>
               <TableCell>Hora Salida</TableCell>
@@ -64,7 +63,6 @@ const HojaTrabajoTable: React.FC<HojaTrabajoTableProps> = ({ hojas, onEdit, onDe
                     </div>
                   </TableCell>
                   <TableCell>{row.piso_doble ? 'Sí' : 'No'}</TableCell>
-                  <TableCell>{row.total_asientos}{row.total_asientos_piso2 ? ` / ${row.total_asientos_piso2}` : ''}</TableCell>
                   <TableCell>{`${row.ciudad_origen} → ${row.ciudad_destino}`}</TableCell>
                   <TableCell>{row.codigo}</TableCell>
                   <TableCell>{row.horaSalidaProg || '-'}</TableCell>
