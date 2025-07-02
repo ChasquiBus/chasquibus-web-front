@@ -14,7 +14,19 @@ export default function BoletosPage() {
   useEffect(() => {
     setLoading(true);
     getAllBoletos()
-      .then(setBoletos)
+      .then(boletosData => {
+        setBoletos(boletosData);
+        // Lógica para mostrar automáticamente el modal del último boleto generado
+        const ultimaVentaId = localStorage.getItem('ultima_venta_id');
+        if (ultimaVentaId) {
+          const boleto = boletosData.find(b => String(b.ventaId) === ultimaVentaId);
+          if (boleto) {
+            setBoletoQr(boleto);
+            setQrOpen(true);
+            localStorage.removeItem('ultima_venta_id');
+          }
+        }
+      })
       .catch(err => setError(err?.message || 'Error al cargar boletos'))
       .finally(() => setLoading(false));
   }, []);

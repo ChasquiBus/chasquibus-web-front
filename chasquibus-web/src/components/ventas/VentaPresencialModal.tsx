@@ -191,8 +191,13 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
         }),
         posiciones
       };
-      await createVentaPresencial(venta);
+      const ventaResponse = await createVentaPresencial(venta);
+      console.log('VENTA RESPONSE', ventaResponse);
       setVentaExitosa(true);
+      if (ventaResponse && ventaResponse.venta && ventaResponse.venta.id) {
+        localStorage.setItem('ultima_venta_id', String(ventaResponse.venta.id));
+        console.log('GUARDADO ultima_venta_id', ventaResponse.venta.id);
+      }
       if (onVentaExitosa) onVentaExitosa();
       // --- ACTUALIZAR CONFIGURACIÓN GENERAL DE ASIENTOS ---
       if (idConfigAsientos && configAsientosOriginal.length > 0) {
