@@ -17,6 +17,7 @@ export interface BoletoPresencial {
   descuentoId?: number | null;
   cedula?: string;
   nombre?: string;
+  apellido?: string;
   totalSinDescPorPers: string;
   totalDescPorPers: string;
   totalPorPer: string;

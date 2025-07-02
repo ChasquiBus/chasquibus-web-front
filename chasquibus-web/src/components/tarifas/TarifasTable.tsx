@@ -1,7 +1,7 @@
 import React from 'react';
 import { TarifaParada } from '@/services/tarifasParadas';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Typography, Box, Chip, Tooltip
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Typography, Box, Chip, Tooltip, Button
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,6 +20,13 @@ interface TarifasTableProps {
 
 const TarifasTable: React.FC<TarifasTableProps> = ({ tarifas, paradas, onEdit, onDelete }) => {
   const getNombreParada = (id: number) => paradas.find(p => p.id === id)?.nombreParada || id;
+  const getNombreRuta = (rutaId: number) => {
+    const tarifa = tarifas.find(t => t.rutaId === rutaId);
+    if (!tarifa) return `Ruta ${rutaId}`;
+    const origen = getNombreParada(Number(tarifa.paradaOrigenId));
+    const destino = getNombreParada(Number(tarifa.paradaDestinoId));
+    return `Ruta ${rutaId} (${origen} - ${destino})`;
+  };
 
   return (
     <TableContainer component={Paper} sx={{ mt: 4, boxShadow: 3, borderRadius: 2 }}>
@@ -49,7 +56,7 @@ const TarifasTable: React.FC<TarifasTableProps> = ({ tarifas, paradas, onEdit, o
             tarifas.map((tarifa) => (
               <TableRow key={tarifa.id}>
                 <TableCell>{tarifa.id}</TableCell>
-                <TableCell>{tarifa.rutaId}</TableCell>
+                <TableCell>{getNombreRuta(tarifa.rutaId)}</TableCell>
                 <TableCell>{getNombreParada(Number(tarifa.paradaOrigenId))}</TableCell>
                 <TableCell>{getNombreParada(Number(tarifa.paradaDestinoId))}</TableCell>
                 <TableCell>{tarifa.tipoAsiento || '-'}</TableCell>
@@ -58,12 +65,15 @@ const TarifasTable: React.FC<TarifasTableProps> = ({ tarifas, paradas, onEdit, o
                   <Chip label={tarifa.aplicaTarifa ? 'Sí' : 'No'} color={tarifa.aplicaTarifa ? 'success' : 'default'} size="small" />
                 </TableCell>
                 <TableCell>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Tooltip title="Editar">
-                      <IconButton color="primary" onClick={() => onEdit(tarifa)}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Button
+                      variant="text"
+                      color="primary"
+                      sx={{ textTransform: 'none', textDecoration: 'underline', fontWeight: 600, minWidth: 0, p: 0 }}
+                      onClick={() => onEdit(tarifa)}
+                    >
+                      Agregar precio
+                    </Button>
                     <Tooltip title="Eliminar">
                       <IconButton color="error" onClick={() => onDelete(tarifa.id)}>
                         <DeleteIcon />

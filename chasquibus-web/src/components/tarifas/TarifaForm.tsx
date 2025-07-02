@@ -54,8 +54,12 @@ const TarifaForm: React.FC<TarifaFormProps> = ({ open, rutas, paradas, initialVa
   }, [initialValues, open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : String(value) }));
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      setForm((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: String(value) }));
+    }
   };
 
   const handleSave = () => {
@@ -66,6 +70,10 @@ const TarifaForm: React.FC<TarifaFormProps> = ({ open, rutas, paradas, initialVa
     }
     if (Number(form.valor) <= 0) {
       setError('El valor debe ser mayor a 0.');
+      return;
+    }
+    if (Number(form.valor) > 100) {
+      setError('El valor no puede ser mayor a 100.');
       return;
     }
     if (form.tipoAsiento && String(form.tipoAsiento).length > 10) {
@@ -100,9 +108,9 @@ const TarifaForm: React.FC<TarifaFormProps> = ({ open, rutas, paradas, initialVa
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>{isEdit ? 'Editar Tarifa' : 'Agregar Tarifa'}</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+      <DialogTitle sx={{ fontWeight: 700, textAlign: 'center', pb: 1 }}>{isEdit ? 'Agregar precio' : 'Agregar Tarifa'}</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, pb: 0 }}>
+        <Box sx={{ padding: 1, display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2, justifyContent: 'center', width: '100%' }}>
           {!isEdit && (
             <TextField
               select
@@ -114,9 +122,28 @@ const TarifaForm: React.FC<TarifaFormProps> = ({ open, rutas, paradas, initialVa
               sx={{ minWidth: 170, background: '#fff' }}
               required
             >
-              {rutas.map((ruta) => (
-                <MenuItem key={ruta.id} value={ruta.id}>{ruta.nombre}</MenuItem>
-              ))}
+              {rutas.map((ruta) => {
+                // Si no existen origenId/destinoId, solo muestra el nombre
+                // (esto es para evitar el error de linter)
+                // Si existen, muestra el formato completo
+                // @ts-ignore
+                const origen = 'origenId' in ruta ? paradas.find(p => p.id === ruta.origenId)?.nombreParada : '';
+                // @ts-ignore
+                const destino = 'destinoId' in ruta ? paradas.find(p => p.id === ruta.destinoId)?.nombreParada : '';
+                // @ts-ignore
+                if ('origenId' in ruta && 'destinoId' in ruta) {
+                  return (
+                    <MenuItem key={ruta.id} value={ruta.id}>
+                      {`Ruta ${ruta.id} (${origen} - ${destino})`}
+                    </MenuItem>
+                  );
+                }
+                return (
+                  <MenuItem key={ruta.id} value={ruta.id}>
+                    {ruta.nombre || `Ruta ${ruta.id}`}
+                  </MenuItem>
+                );
+              })}
             </TextField>
           )}
           {!isEdit && (
@@ -158,8 +185,9 @@ const TarifaForm: React.FC<TarifaFormProps> = ({ open, rutas, paradas, initialVa
             value={form.tipoAsiento}
             onChange={handleChange}
             size="small"
-            sx={{ minWidth: 170, background: '#fff' }}
+            sx={{ minWidth: 240, background: '#fff' }}
             helperText="Opcional"
+            disabled={isEdit}
           >
             <MenuItem value="">-</MenuItem>
             {tiposAsiento.map((tipo) => (
@@ -173,9 +201,9 @@ const TarifaForm: React.FC<TarifaFormProps> = ({ open, rutas, paradas, initialVa
             value={form.valor}
             onChange={handleChange}
             size="small"
-            sx={{ minWidth: 170, background: '#fff' }}
+            sx={{ minWidth: 240, background: '#fff' }}
             required
-            inputProps={{ step: '0.01', min: 0 }}
+            inputProps={{ step: '0.01', min: 0, max: 100 }}
           />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -194,7 +222,7 @@ const TarifaForm: React.FC<TarifaFormProps> = ({ open, rutas, paradas, initialVa
         </Box>
         {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'center' }}>
         <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
         <Button onClick={handleSave} variant="contained" color="primary" sx={{ fontWeight: 700, boxShadow: 2 }}>Guardar</Button>
       </DialogActions>

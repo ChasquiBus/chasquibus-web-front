@@ -10,6 +10,8 @@ import SeleccionAsientosGrid from '@/components/ventas/SeleccionAsientosGrid';
 import { getTarifasParadasByRutaId, TarifaParada } from '@/services/tarifasParadas';
 import { getAllDescuentos, Descuento } from '@/services/descuentos';
 import { createVentaPresencial } from '@/services/ventas';
+import ModalPasajero from './ModalPasajero';
+import ConfirmDialog from '../resoluciones/ConfirmDialog';
 
 const steps = [
   "Selecciona Ruta",
@@ -50,6 +52,9 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
   const [tarifas, setTarifas] = useState<TarifaParada[]>([]);
   const [descuentos, setDescuentos] = useState<Descuento[]>([]);
   const [boletos, setBoletos] = useState<Record<string, any>>({});
+  // Estado para modal de pasajero
+  const [modalOpen, setModalOpen] = useState(false);
+  const [asientoEditando, setAsientoEditando] = useState<any>(null);
 
   // Paso 5: Resumen y confirmación
   const [loadingVenta, setLoadingVenta] = useState(false);
@@ -58,6 +63,18 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
   const [idConfigAsientos, setIdConfigAsientos] = useState<number | null>(null);
   // Guardar la configuración original para actualizarla tras la venta
   const [configAsientosOriginal, setConfigAsientosOriginal] = useState<PosicionAsiento[]>([]);
+
+  // Declarar formulariosCompletos aquí para que esté disponible
+  const formulariosCompletos =
+    Object.keys(boletos).length === asientosSeleccionados.length &&
+    asientosSeleccionados.every(asiento => {
+      const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
+      const b = boletos[key];
+      return b && b.nombre && b.apellido && b.cedula && b.tarifaId;
+    });
+
+  // Estado para el diálogo de confirmación de cancelación
+  const [openConfirmCancel, setOpenConfirmCancel] = useState(false);
 
   useEffect(() => {
     setLoadingRutas(true);
@@ -147,80 +164,6 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
     }
   };
 
-  // Componente interno para formulario de pasajero
-  interface FormularioPasajeroProps {
-    asiento: any;
-    value: any;
-    onChange: (val: any) => void;
-    tarifas: TarifaParada[];
-    descuentos: Descuento[];
-  }
-  function FormularioPasajero({ asiento, value, onChange, tarifas, descuentos }: FormularioPasajeroProps) {
-    // Calcular tarifa seleccionada
-    const tarifa = tarifas.find(t => t.id === value.tarifaId);
-    const valorTarifa = tarifa ? Number(tarifa.valor) : 0;
-    // Calcular descuento seleccionado
-    const descuento = descuentos.find(d => d.id === value.descuentoId);
-    const porcentajeDesc = descuento ? Number(descuento.porcentaje) : 0;
-    // Cálculos
-    const totalSinDesc = valorTarifa;
-    const totalDesc = porcentajeDesc ? (valorTarifa * porcentajeDesc) : 0;
-    const totalFinal = valorTarifa - totalDesc;
-    return (
-      <Box sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
-        <Typography variant="subtitle1" sx={{ color: '#000' }}>Asiento {asiento.numeroAsiento}</Typography>
-        <TextField
-          label="Nombre"
-          value={value.nombre || ''}
-          onChange={e => onChange({ ...value, nombre: e.target.value })}
-          fullWidth sx={{ mb: 1 }}
-        />
-        <TextField
-          label="Cédula"
-          value={value.cedula || ''}
-          onChange={e => onChange({ ...value, cedula: e.target.value })}
-          fullWidth sx={{ mb: 1 }}
-        />
-        <TextField
-          select
-          label="Tarifa"
-          value={value.tarifaId || ''}
-          onChange={e => onChange({ ...value, tarifaId: e.target.value })}
-          fullWidth sx={{ mb: 1 }}
-        >
-          {tarifas.map(t => (
-            <MenuItem key={t.id} value={t.id}>{t.tipoAsiento || 'General'} - ${t.valor}</MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label="Descuento"
-          value={value.descuentoId || ''}
-          onChange={e => onChange({ ...value, descuentoId: e.target.value })}
-          fullWidth sx={{ mb: 1 }}
-        >
-          <MenuItem value="">Sin descuento</MenuItem>
-          {descuentos.map(d => (
-            <MenuItem key={d.id} value={d.id}>{d.tipoDescuento} - {(Number(d.porcentaje) * 100).toFixed(0)}%</MenuItem>
-          ))}
-        </TextField>
-        <Box sx={{ mt: 1 }}>
-          <Typography variant="body2" sx={{ color: '#000' }}>Total sin descuento: ${totalSinDesc.toFixed(2)}</Typography>
-          <Typography variant="body2" sx={{ color: '#000' }}>Descuento: -${totalDesc.toFixed(2)}</Typography>
-          <Typography variant="subtitle2" sx={{ color: '#000' }}>Total a pagar: ${totalFinal.toFixed(2)}</Typography>
-        </Box>
-      </Box>
-    );
-  }
-
-  const formulariosCompletos =
-    Object.keys(boletos).length === asientosSeleccionados.length &&
-    asientosSeleccionados.every(asiento => {
-      const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
-      const b = boletos[key];
-      return b && b.nombre && b.cedula && b.tarifaId;
-    });
-
   // Paso 5: Resumen y confirmación
   const totalGeneral = Object.values(boletos).reduce((acc, b) => acc + Number(b.totalPorPer || 0), 0);
 
@@ -248,8 +191,13 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
         }),
         posiciones
       };
-      await createVentaPresencial(venta);
+      const ventaResponse = await createVentaPresencial(venta);
+      console.log('VENTA RESPONSE', ventaResponse);
       setVentaExitosa(true);
+      if (ventaResponse && ventaResponse.venta && ventaResponse.venta.id) {
+        localStorage.setItem('ultima_venta_id', String(ventaResponse.venta.id));
+        console.log('GUARDADO ultima_venta_id', ventaResponse.venta.id);
+      }
       if (onVentaExitosa) onVentaExitosa();
       // --- ACTUALIZAR CONFIGURACIÓN GENERAL DE ASIENTOS ---
       if (idConfigAsientos && configAsientosOriginal.length > 0) {
@@ -331,45 +279,51 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
           )}
         </Box>
       )}
-      {/* Paso 4: Datos de pasajeros */}
+      {/* Paso 4: Datos de pasajeros (nuevo resumen + modal) */}
       {activeStep === 3 && (
         <Box sx={{ maxWidth: 700, mx: 'auto' }}>
           <Typography variant="h6" sx={{ mb: 2, color: '#000' }}>Datos de los pasajeros</Typography>
+          {asientosSeleccionados.length === 0 && (
+            <Typography variant="body2">Selecciona al menos un asiento.</Typography>
+          )}
           {asientosSeleccionados.map(asiento => {
             const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
+            const datos = boletos[key] || {};
+            const tieneDatos = datos.nombre && datos.apellido && datos.cedula && datos.tarifaId;
             return (
-              <FormularioPasajero
-                key={key}
-                asiento={asiento}
-                value={boletos[key] || {}}
-                onChange={val => {
-                  setBoletos(prev => {
-                    // Solo actualiza el campo editado, no reemplaces el objeto completo
-                    const nuevos = { ...prev };
-                    const actual = { ...nuevos[key], ...val };
-                    // Calcular totales
-                    const tarifa = tarifas.find(t => t.id === actual.tarifaId);
-                    const valorTarifa = tarifa ? Number(tarifa.valor) : 0;
-                    const descuento = descuentos.find(d => d.id === actual.descuentoId);
-                    const porcentajeDesc = descuento ? Number(descuento.porcentaje) : 0;
-                    const totalSinDescPorPers = valorTarifa.toFixed(2);
-                    const totalDescPorPers = (valorTarifa * porcentajeDesc).toFixed(2);
-                    const totalPorPer = (valorTarifa - (valorTarifa * porcentajeDesc)).toFixed(2);
-                    nuevos[key] = {
-                      ...actual,
-                      asientoNumero: asiento.numeroAsiento,
-                      totalSinDescPorPers,
-                      totalDescPorPers,
-                      totalPorPer,
-                    };
-                    return nuevos;
-                  });
-                }}
-                tarifas={tarifas}
-                descuentos={descuentos}
-              />
+              <Box key={key} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2, background: '#f7f7f7' }}>
+                <Typography variant="subtitle1" sx={{ color: '#000' }}>Asiento {asiento.numeroAsiento}</Typography>
+                <Typography variant="body2" sx={{ color: datos.nombre ? '#000' : '#888' }}>Nombre: {datos.nombre || 'Sin datos'}</Typography>
+                <Typography variant="body2" sx={{ color: datos.apellido ? '#000' : '#888' }}>Apellido: {datos.apellido || 'Sin datos'}</Typography>
+                <Typography variant="body2" sx={{ color: datos.cedula ? '#000' : '#888' }}>Cédula: {datos.cedula || 'Sin datos'}</Typography>
+                <Typography variant="body2" sx={{ color: datos.tarifaId ? '#000' : '#888' }}>Tarifa: {datos.tarifaId ? `$${tarifas.find(t=>t.id===datos.tarifaId)?.valor}` : 'Sin datos'}</Typography>
+                <Typography variant="body2" sx={{ color: datos.descuentoId ? '#000' : '#888' }}>Descuento: {datos.descuentoId ? `${(Number(descuentos.find(d=>d.id===datos.descuentoId)?.porcentaje)*100).toFixed(0)}%` : 'Sin descuento'}</Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{ mt: 1 }}
+                  onClick={() => { setAsientoEditando({ ...asiento }); setModalOpen(true); }}
+                >
+                  {tieneDatos ? 'Editar datos' : 'Ingresar datos'}
+                </Button>
+              </Box>
             );
           })}
+          {/* Modal para editar datos de pasajero */}
+          {asientoEditando && (
+            <ModalPasajero
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              onSave={val => {
+                const key = `p${asientoEditando.piso}-f${asientoEditando.fila}-c${asientoEditando.columna}-n${asientoEditando.numeroAsiento}`;
+                setBoletos(prev => ({ ...prev, [key]: val }));
+              }}
+              value={boletos[`p${asientoEditando.piso}-f${asientoEditando.fila}-c${asientoEditando.columna}-n${asientoEditando.numeroAsiento}`] || {}}
+              tarifas={tarifas}
+              descuentos={descuentos}
+              asientoNumero={asientoEditando.numeroAsiento}
+            />
+          )}
         </Box>
       )}
       {/* Paso 5: Resumen y confirmación */}
@@ -383,6 +337,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
               <Box key={key} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
                 <Typography variant="subtitle1" sx={{ color: '#000' }}>Asiento {boleto.asientoNumero}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Nombre: {boleto.nombre}</Typography>
+                <Typography variant="body2" sx={{ color: '#000' }}>Apellido: {boleto.apellido}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Cédula: {boleto.cedula}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Tarifa: ${boleto.totalSinDescPorPers}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Descuento: -${boleto.totalDescPorPers}</Typography>
@@ -399,7 +354,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
       )}
       {/* Botones de navegación al final, fuera de DialogActions */}
       <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button onClick={() => window.confirm('¿Seguro que deseas cancelar la venta?') && window.location.reload()} color="secondary" disabled={loadingVenta}>Cancelar</Button>
+        <Button onClick={() => setOpenConfirmCancel(true)} color="secondary" disabled={loadingVenta}>Cancelar</Button>
         {activeStep > 0 && <Button onClick={() => setActiveStep(s => s - 1)} disabled={loadingVenta}>Atrás</Button>}
         {activeStep < steps.length - 1 && <Button variant="contained" onClick={() => setActiveStep(s => s + 1)} disabled={
           (activeStep === 0 && !rutaSeleccionada) ||
@@ -412,6 +367,13 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
             {loadingVenta ? 'Procesando...' : 'Confirmar venta'}
           </Button>
         }
+        {/* Confirmación de cancelación */}
+        <ConfirmDialog
+          open={openConfirmCancel}
+          message="¿Seguro que deseas cancelar la venta?"
+          onConfirm={() => { setOpenConfirmCancel(false); window.location.reload(); }}
+          onCancel={() => setOpenConfirmCancel(false)}
+        />
       </Box>
     </Box>
   );

@@ -19,6 +19,7 @@ const DIAS_SEMANA = [
   { diaId: 6, nombre: 'Sábado' },
   { diaId: 7, nombre: 'Domingo' },
 ];
+const TODOS_IDS = DIAS_SEMANA.map(d => d.diaId);
 
 export default function RutasPage() {
   const [rutas, setRutas] = useState<Ruta[]>([]);
@@ -105,7 +106,11 @@ export default function RutasPage() {
 
   const handleDiasChange = (event: any) => {
     const value = event.target.value;
-    setDiasSeleccionados(typeof value === 'string' ? value.split(',') : value);
+    if (value.includes('todos')) {
+      setDiasSeleccionados(TODOS_IDS);
+    } else {
+      setDiasSeleccionados(typeof value === 'string' ? value.split(',') : value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,10 +129,10 @@ export default function RutasPage() {
       };
       if (editRuta) {
         await updateRuta(editRuta.id, payload);
-        setSnackbar({open: true, msg: 'Ruta actualizada', type: 'success'});
+        setSnackbar({open: true, msg: 'Ruta actualizada correctamente', type: 'success'});
       } else {
         await createRuta(payload);
-        setSnackbar({open: true, msg: 'Ruta creada', type: 'success'});
+        setSnackbar({open: true, msg: 'Ruta creada correctamente', type: 'success'});
       }
       handleCloseModal();
       cargarDatos();
@@ -205,6 +210,12 @@ export default function RutasPage() {
     }
   };
 
+  // Calcular la fecha mínima permitida (hoy)
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" sx={{ mb: 3 ,color:'black'}}>Gestión de Rutas</Typography>
@@ -216,6 +227,7 @@ export default function RutasPage() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell><b>ID</b></TableCell>
                 <TableCell><b>Origen</b></TableCell>
                 <TableCell><b>Destino</b></TableCell>
                 <TableCell><b>Prioridad</b></TableCell>
@@ -226,6 +238,7 @@ export default function RutasPage() {
             <TableBody>
               {rutas.map((ruta) => (
                 <TableRow key={ruta.id}>
+                  <TableCell>{ruta.id}</TableCell>
                   <TableCell>{paradas.find(p => p.id === ruta.paradaOrigenId)?.nombreParada || ruta.paradaOrigenId}</TableCell>
                   <TableCell>{paradas.find(p => p.id === ruta.paradaDestinoId)?.nombreParada || ruta.paradaDestinoId}</TableCell>
                   <TableCell>{ruta.prioridad ?? '-'}</TableCell>
@@ -256,7 +269,7 @@ export default function RutasPage() {
                 onChange={handleChange}
                 label="Parada Origen"
               >
-                {paradas.map((p) => (
+                {paradas.filter(p => p.esTerminal).map((p) => (
                   <MenuItem key={p.id} value={p.id}>{p.nombreParada}</MenuItem>
                 ))}
               </Select>
@@ -269,7 +282,7 @@ export default function RutasPage() {
                 onChange={handleChange}
                 label="Parada Destino"
               >
-                {paradas.map((p) => (
+                {paradas.filter(p => p.esTerminal).map((p) => (
                   <MenuItem key={p.id} value={p.id}>{p.nombreParada}</MenuItem>
                 ))}
               </Select>
@@ -280,8 +293,15 @@ export default function RutasPage() {
                 multiple
                 value={diasSeleccionados}
                 onChange={handleDiasChange}
-                renderValue={(selected) => DIAS_SEMANA.filter(d => selected.includes(d.diaId)).map(d => d.nombre).join(', ')}
+                renderValue={(selected) => {
+                  if (selected.length === TODOS_IDS.length) return 'Todos';
+                  return DIAS_SEMANA.filter(d => selected.includes(d.diaId)).map(d => d.nombre).join(', ');
+                }}
               >
+                <MenuItem value="todos">
+                  <Checkbox checked={diasSeleccionados.length === TODOS_IDS.length} />
+                  <ListItemText primary="Todos" />
+                </MenuItem>
                 {DIAS_SEMANA.map((dia) => (
                   <MenuItem key={dia.diaId} value={dia.diaId}>
                     <Checkbox checked={diasSeleccionados.indexOf(dia.diaId) > -1} />
@@ -290,14 +310,30 @@ export default function RutasPage() {
                 ))}
               </Select>
             </FormControl>
-            <TextField
-              label="Prioridad"
-              name="prioridad"
-              type="number"
-              value={form.prioridad}
-              onChange={handleChange}
-              fullWidth
-            />
+            <FormControl fullWidth required>
+              <InputLabel id="prioridad-label" shrink={true}>Prioridades</InputLabel>
+              <Select
+                labelId="prioridad-label"
+                name="prioridad"
+                value={form.prioridad}
+                onChange={handleChange}
+                label="Prioridades"
+                displayEmpty
+                renderValue={selected => selected ? selected : 'Selecciona prioridad'}
+                inputProps={{
+                  'aria-label': 'Selecciona prioridad',
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Selecciona prioridad
+                </MenuItem>
+                <MenuItem value={1}>1</MenuItem>
+                <MenuItem value={2}>2</MenuItem>
+                <MenuItem value={3}>3</MenuItem>
+                <MenuItem value={4}>4</MenuItem>
+                <MenuItem value={5}>5</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               label="Fecha Inicio Vigencia"
               name="fechaIniVigencia"
@@ -306,6 +342,7 @@ export default function RutasPage() {
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
               fullWidth
+              inputProps={{ min: getMinDate() }}
             />
             <TextField
               label="Fecha Fin Vigencia"
@@ -315,6 +352,7 @@ export default function RutasPage() {
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
               fullWidth
+              inputProps={{ min: getMinDate() }}
             />
             <FormControlLabel
               control={<Switch checked={form.estado} onChange={e => setForm((prev: any) => ({ ...prev, estado: e.target.checked }))} />}

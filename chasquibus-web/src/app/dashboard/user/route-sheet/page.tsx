@@ -16,6 +16,7 @@ import { busesService } from '@/services/buses';
 import { choferesService } from '@/services/choferes';
 import { getFrequenciesByCooperativa } from '@/services/frequencies';
 import { getRutas } from '@/services/rutas';
+import { getParadas } from '@/services/paradas';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 
@@ -26,7 +27,7 @@ export default function RouteSheetPage() {
   const [buses, setBuses] = useState<{ id: number; placa: string }[]>([]);
   const [choferes, setChoferes] = useState<{ id: number; nombre: string }[]>([]);
   const [frecuencias, setFrecuencias] = useState<any[]>([]);
-  const [rutas, setRutas] = useState<{ id: number; nombre: string }[]>([]);
+  const [rutas, setRutas] = useState<{ id: number; nombre: string; origen: string; destino: string }[]>([]);
   const [openForm, setOpenForm] = useState(false);
   const [editing, setEditing] = useState<HojaTrabajoDetallada | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,19 +39,22 @@ export default function RouteSheetPage() {
   const [filtroRuta, setFiltroRuta] = useState<string>('');
   const [openAuto, setOpenAuto] = useState(false);
   const [autoForm, setAutoForm] = useState({ numDias: 1, fechaInicial: '' });
+  const [paradas, setParadas] = useState<{ id: number; nombreParada: string }[]>([]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('access_token') || '';
       const cooperativaId = 1;
-      const [hojasData, busesData, choferesData, frecData, rutasData] = await Promise.all([
+      const [hojasData, busesData, choferesData, frecData, rutasData, paradasData] = await Promise.all([
         getHojasTrabajoCooperativa(),
         busesService.getAll(),
         choferesService.getAllChoferes(cooperativaId, token),
         getFrequenciesByCooperativa(),
         getRutas(),
+        getParadas(),
       ]);
+      setParadas(paradasData);
       let hojasFiltradas = Array.isArray(hojasData) ? hojasData : [];
       if (filtroEstado) hojasFiltradas = hojasFiltradas.filter(h => h.estado === filtroEstado);
       if (filtroFecha) hojasFiltradas = hojasFiltradas.filter(h => h.horaSalidaProg && h.horaSalidaProg.startsWith(filtroFecha));
@@ -59,10 +63,16 @@ export default function RouteSheetPage() {
       setBuses(busesData.filter((b: any) => b.activo).map((b: any) => ({ id: b.id, placa: b.placa })));
       setChoferes(choferesData.map((c: any) => ({ id: c.id, nombre: c.usuario ? `${c.usuario.nombre} ${c.usuario.apellido || ''}`.trim() : c.id })));
       setFrecuencias(frecData);
-      const rutasMapped = rutasData.map((r: any) => ({
-        id: r.id,
-        nombre: `Ruta ${r.id}: ${r.paradaOrigenId} → ${r.paradaDestinoId}`,
-      }));
+      const rutasMapped = rutasData.map((r: any) => {
+        const origen = paradasData.find((p: any) => p.id === r.paradaOrigenId)?.nombreParada || r.paradaOrigenId;
+        const destino = paradasData.find((p: any) => p.id === r.paradaDestinoId)?.nombreParada || r.paradaDestinoId;
+        return {
+          id: r.id,
+          nombre: `Ruta ${r.id}: ${origen} → ${destino}`,
+          origen,
+          destino,
+        };
+      });
       setRutas(rutasMapped);
     } catch (e: any) {
       let msg = 'Error al cargar datos';
@@ -190,7 +200,7 @@ export default function RouteSheetPage() {
         buses={buses}
         choferes={choferes}
         frecuencias={frecuencias}
-        estados={estados}
+        rutas={rutas}
         initialData={editing || undefined}
         loading={loading}
       />

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { CreateChoferDto, UpdateChoferDto, Chofer } from '@/types/chofer';
@@ -14,6 +14,8 @@ import {
   InputLabel, 
   FormControl
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import * as validations from '@/lib/utils/validations';
 
 interface ChoferFormProps {
   initialData?: Chofer | null;
@@ -24,19 +26,28 @@ interface ChoferFormProps {
 
 const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel, cooperativaId }) => {
   const isEditMode = !!initialData;
+  const [licenciaEditada, setLicenciaEditada] = useState(false);
 
   const validationSchema = yup.object({
-    email: yup.string().email('Introduce un email válido').required('El email es obligatorio'),
+    email: yup
+      .string()
+      .required('El email es obligatorio')
+      .test('validar-email', 'Introduce un email válido', value => !value || validations.validarEmail(value)),
     password: yup.string()
       .min(6, 'La contraseña debe tener al menos 6 caracteres')
       .test('password-required', 'La contraseña es obligatoria', function(value) {
-        return isEditMode ? true : !!value; // En modo edición no es obligatoria, en creación sí
+        return isEditMode ? true : !!value;
       }),
     nombre: yup.string().required('El nombre es obligatorio'),
     apellido: yup.string().required('El apellido es obligatorio'),
-    cedula: yup.string().required('La cédula es obligatoria').matches(/^\d{10}$/, 'La cédula debe tener 10 dígitos'),
-    telefono: yup.string().matches(/^\+?\d{10,15}$/, 'Introduce un teléfono válido (ej. +5939...)').optional(),
-    activo: yup.boolean().required('El estado activo es obligatorio'),
+    cedula: yup
+      .string()
+      .required('La cédula es obligatoria')
+      .test('validar-cedula', 'La cédula no es válida', value => !value || validations.validarCedulaEcuador(value)),
+    telefono: yup
+      .string()
+      .optional()
+      .test('validar-telefono', 'Introduce un teléfono válido (ej. 09XXXXXXXX)', value => !value || validations.validarCelularEcuador(value)),
     numeroLicencia: yup.string().required('El número de licencia es obligatorio'),
     tipoLicencia: yup.string().required('El tipo de licencia es obligatorio'),
     tipoSangre: yup.string().required('El tipo de sangre es obligatorio'),
@@ -52,7 +63,6 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
       apellido: '',
       cedula: '',
       telefono: '',
-      activo: true,
       numeroLicencia: '',
       tipoLicencia: '',
       tipoSangre: '',
@@ -68,7 +78,6 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
         apellido: initialData.usuario?.apellido || defaults.apellido,
         cedula: initialData.usuario?.cedula || defaults.cedula,
         telefono: initialData.usuario?.telefono || defaults.telefono,
-        activo: initialData.usuario?.activo ?? defaults.activo,
         numeroLicencia: initialData.numeroLicencia || defaults.numeroLicencia,
         tipoLicencia: initialData.tipoLicencia || defaults.tipoLicencia,
         tipoSangre: initialData.tipoSangre || defaults.tipoSangre,
@@ -97,7 +106,7 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
 
         dataToSend = updateDto;
       } else {
-        const { cooperativaTransporteId, activo, ...rest } = values;
+        const { cooperativaTransporteId, ...rest } = values;
         dataToSend = { ...rest } as CreateChoferDto;
       }
       
@@ -106,16 +115,31 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
     enableReinitialize: true,
   });
 
+  // Calcular la fecha máxima y mínima permitida (edad mínima 19, máxima 70)
+  const getMaxDateNacimiento = () => {
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 19);
+    return today.toISOString().split('T')[0];
+  };
+  const getMinDateNacimiento = () => {
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 70);
+    return today.toISOString().split('T')[0];
+  };
+
+  useEffect(() => {
+    if (formik.values.numeroLicencia === '' || formik.values.numeroLicencia === formik.initialValues.numeroLicencia) {
+      setLicenciaEditada(false);
+    }
+  }, [formik.values.numeroLicencia, formik.initialValues.numeroLicencia]);
+
   return (
     <Box
       component="form"
       onSubmit={formik.handleSubmit}
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
         mt: 2,
-        maxWidth: 500,
+        maxWidth: 700,
         mx: 'auto',
         p: 3,
         boxShadow: 3,
@@ -126,179 +150,201 @@ const ChoferForm: React.FC<ChoferFormProps> = ({ initialData, onSubmit, onCancel
       <Typography variant="h5" component="h2" gutterBottom>
         {isEditMode ? 'Editar Chofer' : 'Crear Chofer'}
       </Typography>
-
-      <TextField
-        fullWidth
-        id="email"
-        name="email"
-        label="Email"
-        value={formik.values.email}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.email && Boolean(formik.errors.email)}
-        helperText={formik.touched.email && formik.errors.email}
-        disabled={isEditMode} // No permitir cambiar el email en edición
-      />
-
-      {!isEditMode && (
-        <TextField
-          fullWidth
-          id="password"
-          name="password"
-          label="Contraseña"
-          type="password"
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.touched.password && Boolean(formik.errors.password)}
-          helperText={formik.touched.password && formik.errors.password}
-        />
-      )}
-
-      <TextField
-        fullWidth
-        id="nombre"
-        name="nombre"
-        label="Nombre"
-        value={formik.values.nombre}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.nombre && Boolean(formik.errors.nombre)}
-        helperText={formik.touched.nombre && formik.errors.nombre}
-      />
-
-      <TextField
-        fullWidth
-        id="apellido"
-        name="apellido"
-        label="Apellido"
-        value={formik.values.apellido}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.apellido && Boolean(formik.errors.apellido)}
-        helperText={formik.touched.apellido && formik.errors.apellido}
-      />
-
-      <TextField
-        fullWidth
-        id="cedula"
-        name="cedula"
-        label="Cédula"
-        value={formik.values.cedula}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.cedula && Boolean(formik.errors.cedula)}
-        helperText={formik.touched.cedula && formik.errors.cedula}
-      />
-
-      <TextField
-        fullWidth
-        id="telefono"
-        name="telefono"
-        label="Teléfono (ej. +5939...)"
-        value={formik.values.telefono}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.telefono && Boolean(formik.errors.telefono)}
-        helperText={formik.touched.telefono && formik.errors.telefono}
-      />
-
-      <FormControlLabel
-        control={
-          <Switch
-            id="activo"
-            name="activo"
-            checked={formik.values.activo}
+      <Grid container spacing={2}>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <TextField
+            fullWidth
+            id="email"
+            name="email"
+            label="Email"
+            placeholder="ejemplo@correo.com"
+            value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            color="primary"
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
+            disabled={isEditMode}
           />
-        }
-        label="Activo"
-      />
-      {formik.touched.activo && Boolean(formik.errors.activo) && (
-        <Typography color="error" variant="caption">
-          {formik.errors.activo}
-        </Typography>
-      )}
-
-      <TextField
-        fullWidth
-        id="numeroLicencia"
-        name="numeroLicencia"
-        label="Número de Licencia"
-        value={formik.values.numeroLicencia}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.numeroLicencia && Boolean(formik.errors.numeroLicencia)}
-        helperText={formik.touched.numeroLicencia && formik.errors.numeroLicencia}
-      />
-
-      <FormControl fullWidth error={formik.touched.tipoLicencia && Boolean(formik.errors.tipoLicencia)}>
-        <InputLabel id="tipoLicencia-label">Tipo de Licencia</InputLabel>
-        <Select
-          labelId="tipoLicencia-label"
-          id="tipoLicencia"
-          name="tipoLicencia"
-          value={formik.values.tipoLicencia}
-          label="Tipo de Licencia"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-        >
-          <MenuItem value="D">D</MenuItem>
-          <MenuItem value="D1">D1</MenuItem>
-          <MenuItem value="E">E</MenuItem>
-        </Select>
-        {formik.touched.tipoLicencia && Boolean(formik.errors.tipoLicencia) && (
-          <Typography color="error" variant="caption">
-            {formik.errors.tipoLicencia}
-          </Typography>
-        )}
-      </FormControl>
-
-      <FormControl fullWidth error={formik.touched.tipoSangre && Boolean(formik.errors.tipoSangre)}>
-        <InputLabel id="tipoSangre-label">Tipo de Sangre</InputLabel>
-        <Select
-          labelId="tipoSangre-label"
-          id="tipoSangre"
-          name="tipoSangre"
-          value={formik.values.tipoSangre}
-          label="Tipo de Sangre"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-        >
-          <MenuItem value="O+">O+</MenuItem>
-          <MenuItem value="O-">O-</MenuItem>
-          <MenuItem value="A+">A+</MenuItem>
-          <MenuItem value="A-">A-</MenuItem>
-          <MenuItem value="B+">B+</MenuItem>
-          <MenuItem value="B-">B-</MenuItem>
-          <MenuItem value="AB+">AB+</MenuItem>
-          <MenuItem value="AB-">AB-</MenuItem>
-        </Select>
-        {formik.touched.tipoSangre && Boolean(formik.errors.tipoSangre) && (
-          <Typography color="error" variant="caption">
-            {formik.errors.tipoSangre}
-          </Typography>
-        )}
-      </FormControl>
-
-      <TextField
-        fullWidth
-        id="fechaNacimiento"
-        name="fechaNacimiento"
-        label="Fecha de Nacimiento"
-        type="date"
-        value={formik.values.fechaNacimiento}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.fechaNacimiento && Boolean(formik.errors.fechaNacimiento)}
-        helperText={formik.touched.fechaNacimiento && formik.errors.fechaNacimiento}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          {!isEditMode && (
+            <TextField
+              fullWidth
+              id="password"
+              name="password"
+              label="Contraseña"
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={formik.touched.password && formik.errors.password}
+            />
+          )}
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <TextField
+            fullWidth
+            id="nombre"
+            name="nombre"
+            label="Nombre"
+            placeholder="Nombres completos"
+            value={formik.values.nombre}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.nombre && Boolean(formik.errors.nombre)}
+            helperText={formik.touched.nombre && formik.errors.nombre}
+          />
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <TextField
+            fullWidth
+            id="apellido"
+            name="apellido"
+            label="Apellido"
+            placeholder="Apellidos completos"
+            value={formik.values.apellido}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.apellido && Boolean(formik.errors.apellido)}
+            helperText={formik.touched.apellido && formik.errors.apellido}
+          />
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <TextField
+            fullWidth
+            id="cedula"
+            name="cedula"
+            label="Cédula"
+            placeholder="Ej: 1724727225"
+            value={formik.values.cedula}
+            onChange={e => {
+              formik.handleChange(e);
+              if (!licenciaEditada) {
+                formik.setFieldValue('numeroLicencia', e.target.value);
+              }
+            }}
+            onBlur={formik.handleBlur}
+            error={formik.touched.cedula && Boolean(formik.errors.cedula)}
+            helperText={formik.touched.cedula && formik.errors.cedula}
+          />
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <TextField
+            fullWidth
+            id="telefono"
+            name="telefono"
+            label="Celular"
+            placeholder="Ej: 0984266777"
+            value={formik.values.telefono}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.telefono && Boolean(formik.errors.telefono)}
+            helperText={formik.touched.telefono && formik.errors.telefono}
+          />
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <TextField
+            fullWidth
+            id="numeroLicencia"
+            name="numeroLicencia"
+            label="Número de Licencia"
+            placeholder="Ej: 1724727225"
+            value={formik.values.numeroLicencia}
+            onChange={e => {
+              setLicenciaEditada(true);
+              formik.handleChange(e);
+            }}
+            onBlur={formik.handleBlur}
+            error={formik.touched.numeroLicencia && Boolean(formik.errors.numeroLicencia)}
+            helperText={formik.touched.numeroLicencia && formik.errors.numeroLicencia}
+          />
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <FormControl fullWidth error={formik.touched.tipoLicencia && Boolean(formik.errors.tipoLicencia)}>
+            <InputLabel id="tipoLicencia-label" shrink={true}>Tipo de Licencia</InputLabel>
+            <Select
+              labelId="tipoLicencia-label"
+              id="tipoLicencia"
+              name="tipoLicencia"
+              value={formik.values.tipoLicencia}
+              label="Tipo de Licencia"
+              displayEmpty
+              renderValue={selected => selected ? selected : 'Selecciona el tipo de licencia'}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            >
+              <MenuItem value="" disabled>
+                Selecciona el tipo de licencia
+              </MenuItem>
+              <MenuItem value="D">D</MenuItem>
+              <MenuItem value="D1">D1</MenuItem>
+              <MenuItem value="E">E</MenuItem>
+            </Select>
+            {formik.touched.tipoLicencia && Boolean(formik.errors.tipoLicencia) && (
+              <Typography color="error" variant="caption">
+                {formik.errors.tipoLicencia}
+              </Typography>
+            )}
+          </FormControl>
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <FormControl fullWidth error={formik.touched.tipoSangre && Boolean(formik.errors.tipoSangre)}>
+            <InputLabel id="tipoSangre-label" shrink={true}>Tipo de Sangre</InputLabel>
+            <Select
+              labelId="tipoSangre-label"
+              id="tipoSangre"
+              name="tipoSangre"
+              value={formik.values.tipoSangre}
+              label="Tipo de Sangre"
+              displayEmpty
+              renderValue={selected => selected ? selected : 'Selecciona el tipo de sangre'}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            >
+              <MenuItem value="" disabled>
+                Selecciona el tipo de sangre
+              </MenuItem>
+              <MenuItem value="O+">O+</MenuItem>
+              <MenuItem value="O-">O-</MenuItem>
+              <MenuItem value="A+">A+</MenuItem>
+              <MenuItem value="A-">A-</MenuItem>
+              <MenuItem value="B+">B+</MenuItem>
+              <MenuItem value="B-">B-</MenuItem>
+              <MenuItem value="AB+">AB+</MenuItem>
+              <MenuItem value="AB-">AB-</MenuItem>
+            </Select>
+            {formik.touched.tipoSangre && Boolean(formik.errors.tipoSangre) && (
+              <Typography color="error" variant="caption">
+                {formik.errors.tipoSangre}
+              </Typography>
+            )}
+          </FormControl>
+        </Box>
+        <Box sx={{ width: '100%', maxWidth: 350, flex: 1, minWidth: 200, m: 1 }}>
+          <TextField
+            fullWidth
+            id="fechaNacimiento"
+            name="fechaNacimiento"
+            label="Fecha de Nacimiento"
+            type="date"
+            placeholder="dd/mm/aaaa"
+            value={formik.values.fechaNacimiento}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.fechaNacimiento && Boolean(formik.errors.fechaNacimiento)}
+            helperText={formik.touched.fechaNacimiento && formik.errors.fechaNacimiento}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            inputProps={{
+              min: getMinDateNacimiento(),
+              max: getMaxDateNacimiento(),
+            }}
+          />
+        </Box>
+      </Grid>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
         <Button color="secondary" variant="outlined" onClick={onCancel}>
           Cancelar

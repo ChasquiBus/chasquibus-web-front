@@ -63,6 +63,16 @@ const ParadasPage: React.FC = () => {
   }, [cooperativaId]);
 
   const handleAgregarParada = async (data: { nombreParada: string; ciudadId: number; direccion?: string; esTerminal: boolean }) => {
+    // Validar duplicados por ciudad, nombre y dirección
+    const existe = paradas.some(p =>
+      p.ciudadId === data.ciudadId &&
+      p.nombreParada.trim().toLowerCase() === data.nombreParada.trim().toLowerCase() &&
+      (p.direccion?.trim().toLowerCase() || '') === (data.direccion?.trim().toLowerCase() || '')
+    );
+    if (existe) {
+      mostrarMensaje('Ya existe una parada con la misma ciudad, nombre y dirección.', 'error');
+      return;
+    }
     try {
       await createParada(data);
       mostrarMensaje('Parada creada exitosamente', 'success');
@@ -79,6 +89,17 @@ const ParadasPage: React.FC = () => {
 
   const handleGuardarEdicion = async (data: Partial<Parada>) => {
     if (!data.id) return;
+    // Validar duplicados por ciudad, nombre y dirección (ignorando la parada actual)
+    const existe = paradas.some(p =>
+      p.id !== data.id &&
+      p.ciudadId === data.ciudadId &&
+      p.nombreParada.trim().toLowerCase() === (data.nombreParada?.trim().toLowerCase() || '') &&
+      (p.direccion?.trim().toLowerCase() || '') === (data.direccion?.trim().toLowerCase() || '')
+    );
+    if (existe) {
+      mostrarMensaje('Ya existe una parada con la misma ciudad, nombre y dirección.', 'error');
+      return;
+    }
     try {
       await updateParada(data.id, {
         nombreParada: data.nombreParada,
