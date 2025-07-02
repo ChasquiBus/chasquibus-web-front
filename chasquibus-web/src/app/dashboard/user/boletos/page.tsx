@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { getAllBoletos, Boleto } from '@/services/boletos';
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 import jsQR from 'jsqr';
 
 export default function BoletosPage() {
@@ -10,6 +10,7 @@ export default function BoletosPage() {
   const [error, setError] = useState<string | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [boletoQr, setBoletoQr] = useState<Boleto | null>(null);
+  const [filtroCedula, setFiltroCedula] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -63,9 +64,21 @@ export default function BoletosPage() {
     return null;
   }
 
+  const boletosFiltrados = filtroCedula.trim() === ''
+    ? boletos
+    : boletos.filter(b => b.cedula && b.cedula.includes(filtroCedula.trim()));
+
   return (
     <Box sx={{ p: { xs: 1, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
       <Typography variant="h5" fontWeight={700} sx={{ color: '#000', mb: 2 }}>Boletos</Typography>
+      <TextField
+        label="Filtrar por cédula"
+        value={filtroCedula}
+        onChange={e => setFiltroCedula(e.target.value)}
+        variant="outlined"
+        size="small"
+        sx={{ mb: 2, width: 250 }}
+      />
       {loading ? (
         <CircularProgress />
       ) : error ? (
@@ -89,7 +102,7 @@ export default function BoletosPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {boletos.map((boleto) => (
+              {boletosFiltrados.map((boleto) => (
                 <TableRow key={boleto.id}>
                   <TableCell>{boleto.id}</TableCell>
                   <TableCell>{boleto.asientoNumero}</TableCell>
