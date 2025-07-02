@@ -11,6 +11,7 @@ export interface Boleto {
   codigoQr: string | null;
   cedula: string;
   nombre: string;
+  apellido: string;
   totalSinDescPorPers: string;
   totalDescPorPers: string;
   totalPorPer: string;

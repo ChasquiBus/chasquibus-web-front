@@ -70,7 +70,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
     asientosSeleccionados.every(asiento => {
       const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
       const b = boletos[key];
-      return b && b.nombre && b.cedula && b.tarifaId;
+      return b && b.nombre && b.apellido && b.cedula && b.tarifaId;
     });
 
   // Estado para el diálogo de confirmación de cancelación
@@ -284,11 +284,12 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
           {asientosSeleccionados.map(asiento => {
             const key = `p${asiento.piso}-f${asiento.fila}-c${asiento.columna}-n${asiento.numeroAsiento}`;
             const datos = boletos[key] || {};
-            const tieneDatos = datos.nombre && datos.cedula && datos.tarifaId;
+            const tieneDatos = datos.nombre && datos.apellido && datos.cedula && datos.tarifaId;
             return (
               <Box key={key} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2, background: '#f7f7f7' }}>
                 <Typography variant="subtitle1" sx={{ color: '#000' }}>Asiento {asiento.numeroAsiento}</Typography>
                 <Typography variant="body2" sx={{ color: datos.nombre ? '#000' : '#888' }}>Nombre: {datos.nombre || 'Sin datos'}</Typography>
+                <Typography variant="body2" sx={{ color: datos.apellido ? '#000' : '#888' }}>Apellido: {datos.apellido || 'Sin datos'}</Typography>
                 <Typography variant="body2" sx={{ color: datos.cedula ? '#000' : '#888' }}>Cédula: {datos.cedula || 'Sin datos'}</Typography>
                 <Typography variant="body2" sx={{ color: datos.tarifaId ? '#000' : '#888' }}>Tarifa: {datos.tarifaId ? `$${tarifas.find(t=>t.id===datos.tarifaId)?.valor}` : 'Sin datos'}</Typography>
                 <Typography variant="body2" sx={{ color: datos.descuentoId ? '#000' : '#888' }}>Descuento: {datos.descuentoId ? `${(Number(descuentos.find(d=>d.id===datos.descuentoId)?.porcentaje)*100).toFixed(0)}%` : 'Sin descuento'}</Typography>
@@ -331,6 +332,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
               <Box key={key} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
                 <Typography variant="subtitle1" sx={{ color: '#000' }}>Asiento {boleto.asientoNumero}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Nombre: {boleto.nombre}</Typography>
+                <Typography variant="body2" sx={{ color: '#000' }}>Apellido: {boleto.apellido}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Cédula: {boleto.cedula}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Tarifa: ${boleto.totalSinDescPorPers}</Typography>
                 <Typography variant="body2" sx={{ color: '#000' }}>Descuento: -${boleto.totalDescPorPers}</Typography>

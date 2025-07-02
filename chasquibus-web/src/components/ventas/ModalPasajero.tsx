@@ -51,6 +51,12 @@ const ModalPasajero: React.FC<ModalPasajeroProps> = ({ open, onClose, onSave, va
           fullWidth sx={{ mt: 3, mb: 2 }}
         />
         <TextField
+          label="Apellido"
+          value={form.apellido || ''}
+          onChange={e => setForm({ ...form, apellido: e.target.value })}
+          fullWidth sx={{ mb: 2 }}
+        />
+        <TextField
           label="Cédula"
           value={form.cedula || ''}
           onChange={e => setForm({ ...form, cedula: e.target.value })}
@@ -87,7 +93,7 @@ const ModalPasajero: React.FC<ModalPasajeroProps> = ({ open, onClose, onSave, va
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary" disabled={!(form.nombre && form.cedula && form.tarifaId)}>Guardar</Button>
+        <Button onClick={handleSave} variant="contained" color="primary" disabled={!(form.nombre && form.apellido && form.cedula && form.tarifaId)}>Guardar</Button>
       </DialogActions>
     </Dialog>
   );
