@@ -5,6 +5,7 @@ import VentaPresencialModal from "@/components/ventas/VentaPresencialModal";
 import { getHojasTrabajoCooperativa, HojaTrabajoDetallada } from '@/services/hojaTrabajo';
 import axios from "axios";
 import { getAllBoletos, Boleto } from '@/services/boletos';
+import jsPDF from 'jspdf';
 
 export default function VentasPage() {
   const [ventas, setVentas] = useState<any[]>([]);
@@ -15,6 +16,8 @@ export default function VentasPage() {
   const [openVentaModal, setOpenVentaModal] = useState(false);
   const [boletoModal, setBoletoModal] = useState<Boleto | null>(null);
   const [openBoletoModal, setOpenBoletoModal] = useState(false);
+  const [boletosModal, setBoletosModal] = useState<Boleto[]>([]);
+  const [boletoIndex, setBoletoIndex] = useState(0);
 
   // Función para obtener el nombre de la hoja de trabajo por ID
   const getNombreHojaTrabajo = (hojaTrabajoId: number) => {
@@ -75,19 +78,47 @@ export default function VentasPage() {
     return null;
   }
 
-  // Función para mostrar el modal del boleto de la última venta
+  // Función para mostrar el modal de todos los boletos de la última venta
   const mostrarModalBoletoUltimaVenta = () => {
     const ultimaVentaId = localStorage.getItem('ultima_venta_id');
     if (ultimaVentaId) {
       getAllBoletos().then(boletosData => {
-        const boleto = boletosData.find(b => String(b.ventaId) === ultimaVentaId);
-        if (boleto) {
-          setBoletoModal(boleto);
+        const boletosVenta = boletosData.filter(b => String(b.ventaId) === ultimaVentaId);
+        if (boletosVenta.length > 0) {
+          setBoletosModal(boletosVenta);
+          setBoletoIndex(0);
           setOpenBoletoModal(true);
           localStorage.removeItem('ultima_venta_id');
         }
       });
     }
+  };
+
+  // Función para imprimir el boleto actual
+  const handleImprimirBoleto = () => {
+    if (boletosModal.length === 0) return;
+    const boleto = boletosModal[boletoIndex];
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(16);
+    doc.text('Boleto de viaje', 20, y);
+    y += 10;
+    doc.setFontSize(12);
+    doc.text(`ID: ${boleto.id}`, 20, y); y += 8;
+    doc.text(`Nombre: ${boleto.nombre} ${boleto.apellido}`, 20, y); y += 8;
+    doc.text(`Cédula: ${boleto.cedula}`, 20, y); y += 8;
+    doc.text(`Asiento: ${boleto.asientoNumero}`, 20, y); y += 8;
+    doc.text(`Tarifa: $${boleto.totalSinDescPorPers}`, 20, y); y += 8;
+    doc.text(`Descuento: $${boleto.totalDescPorPers}`, 20, y); y += 8;
+    doc.text(`Total a pagar: $${boleto.totalPorPer}`, 20, y); y += 8;
+    if (boleto.codigoQr) {
+      doc.addImage(boleto.codigoQr, 'PNG', 20, y, 50, 50);
+      y += 55;
+    }
+    doc.save(`boleto_${boleto.id}.pdf`);
+    // Abrir el PDF en una nueva pestaña
+    const pdfUrl = doc.output('bloburl');
+    window.open(pdfUrl, '_blank');
   };
 
   useEffect(() => {
@@ -139,15 +170,16 @@ export default function VentasPage() {
           </TableContainer>
         )}
       </Box>
-      {/* Modal para mostrar el boleto generado automáticamente */}
+      {/* Modal para mostrar los boletos generados automáticamente */}
       <Dialog open={openBoletoModal} onClose={() => setOpenBoletoModal(false)} maxWidth="xs" fullWidth>
         <DialogTitle>QR del Boleto</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 3 }}>
-          {boletoModal?.codigoQr && (
-            <img src={boletoModal.codigoQr} alt="QR Boleto" style={{ width: 200, height: 200, marginBottom: 16 }} />
+          {boletosModal.length > 0 && boletosModal[boletoIndex]?.codigoQr && (
+            <img src={boletosModal[boletoIndex].codigoQr} alt="QR Boleto" style={{ width: 200, height: 200, marginBottom: 16 }} />
           )}
-          {boletoModal && (() => {
-            const qrContent = decodeQRContent(boletoModal.codigoQr);
+          {boletosModal.length > 0 && (() => {
+            const boleto = boletosModal[boletoIndex];
+            const qrContent = decodeQRContent(boleto.codigoQr);
             if (qrContent) {
               return (
                 <div style={{ textAlign: 'center' }}>
@@ -162,17 +194,25 @@ export default function VentasPage() {
             } else {
               return (
                 <div style={{ textAlign: 'center' }}>
-                  <div><b>ID:</b> {boletoModal.id}</div>
-                  <div><b>Nombre:</b> {boletoModal.nombre} {boletoModal.apellido}</div>
-                  <div><b>Cédula:</b> {boletoModal.cedula}</div>
-                  <div><b>Asiento:</b> {boletoModal.asientoNumero}</div>
+                  <div><b>ID:</b> {boleto.id}</div>
+                  <div><b>Nombre:</b> {boleto.nombre} {boleto.apellido}</div>
+                  <div><b>Cédula:</b> {boleto.cedula}</div>
+                  <div><b>Asiento:</b> {boleto.asientoNumero}</div>
                 </div>
               );
             }
           })()}
+          {boletosModal.length > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2, gap: 2 }}>
+              <Button onClick={() => setBoletoIndex(i => Math.max(0, i - 1))} disabled={boletoIndex === 0}>Anterior</Button>
+              <Typography variant="body2">Boleto {boletoIndex + 1} de {boletosModal.length}</Typography>
+              <Button onClick={() => setBoletoIndex(i => Math.min(boletosModal.length - 1, i + 1))} disabled={boletoIndex === boletosModal.length - 1}>Siguiente</Button>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenBoletoModal(false)} color="primary">Cerrar</Button>
+          <Button onClick={handleImprimirBoleto} color="secondary" variant="contained">Imprimir</Button>
         </DialogActions>
       </Dialog>
     </Box>
