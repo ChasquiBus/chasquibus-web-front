@@ -100,7 +100,7 @@ export default function BoletosPage() {
       )}
       <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>QR del Boleto</DialogTitle>
-        <DialogContent sx={{ textAlign: 'center', p: 3 }}>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 3 }}>
           {boletoQr?.codigoQr && (
             <img src={boletoQr.codigoQr} alt="QR Boleto" style={{ width: 200, height: 200, marginBottom: 16 }} />
           )}
@@ -108,23 +108,23 @@ export default function BoletosPage() {
             const qrContent = decodeQRContent(boletoQr.codigoQr);
             if (qrContent) {
               return (
-                <>
+                <div style={{ textAlign: 'center' }}>
                   <div><b>ID Boleto:</b> {qrContent.idBoleto}</div>
                   <div><b>Nombre:</b> {qrContent.nombre} {qrContent.apellido}</div>
                   <div><b>Cédula:</b> {qrContent.cedula}</div>
                   <div><b>Usado:</b> {qrContent.usado ? 'Sí' : 'No'}</div>
                   <div><b>Cooperativa:</b> {qrContent.cooperativa}</div>
                   <div><b>Aplica Descuento:</b> {qrContent.aplicoDescuento ? 'Sí' : 'No'}</div>
-                </>
+                </div>
               );
             } else {
               return (
-                <>
+                <div style={{ textAlign: 'center' }}>
                   <div><b>ID:</b> {boletoQr.id}</div>
                   <div><b>Nombre:</b> {boletoQr.nombre} {boletoQr.apellido}</div>
                   <div><b>Cédula:</b> {boletoQr.cedula}</div>
                   <div><b>Asiento:</b> {boletoQr.asientoNumero}</div>
-                </>
+                </div>
               );
             }
           })()}
