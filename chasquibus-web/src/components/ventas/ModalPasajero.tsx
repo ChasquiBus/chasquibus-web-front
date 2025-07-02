@@ -42,13 +42,13 @@ const ModalPasajero: React.FC<ModalPasajeroProps> = ({ open, onClose, onSave, va
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Datos del pasajero (Asiento {asientoNumero})</DialogTitle>
-      <DialogContent>
+      <DialogTitle sx={{ mb: 3 }}>Datos del pasajero (Asiento {asientoNumero})</DialogTitle>
+      <DialogContent sx={{ p: 6 }}>
         <TextField
           label="Nombre"
           value={form.nombre || ''}
           onChange={e => setForm({ ...form, nombre: e.target.value })}
-          fullWidth sx={{ mb: 2 }}
+          fullWidth sx={{ mt: 3, mb: 2 }}
         />
         <TextField
           label="Cédula"

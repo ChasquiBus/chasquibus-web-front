@@ -11,6 +11,7 @@ import { getTarifasParadasByRutaId, TarifaParada } from '@/services/tarifasParad
 import { getAllDescuentos, Descuento } from '@/services/descuentos';
 import { createVentaPresencial } from '@/services/ventas';
 import ModalPasajero from './ModalPasajero';
+import ConfirmDialog from '../resoluciones/ConfirmDialog';
 
 const steps = [
   "Selecciona Ruta",
@@ -71,6 +72,9 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
       const b = boletos[key];
       return b && b.nombre && b.cedula && b.tarifaId;
     });
+
+  // Estado para el diálogo de confirmación de cancelación
+  const [openConfirmCancel, setOpenConfirmCancel] = useState(false);
 
   useEffect(() => {
     setLoadingRutas(true);
@@ -343,7 +347,7 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
       )}
       {/* Botones de navegación al final, fuera de DialogActions */}
       <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button onClick={() => window.confirm('¿Seguro que deseas cancelar la venta?') && window.location.reload()} color="secondary" disabled={loadingVenta}>Cancelar</Button>
+        <Button onClick={() => setOpenConfirmCancel(true)} color="secondary" disabled={loadingVenta}>Cancelar</Button>
         {activeStep > 0 && <Button onClick={() => setActiveStep(s => s - 1)} disabled={loadingVenta}>Atrás</Button>}
         {activeStep < steps.length - 1 && <Button variant="contained" onClick={() => setActiveStep(s => s + 1)} disabled={
           (activeStep === 0 && !rutaSeleccionada) ||
@@ -356,6 +360,13 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
             {loadingVenta ? 'Procesando...' : 'Confirmar venta'}
           </Button>
         }
+        {/* Confirmación de cancelación */}
+        <ConfirmDialog
+          open={openConfirmCancel}
+          message="¿Seguro que deseas cancelar la venta?"
+          onConfirm={() => { setOpenConfirmCancel(false); window.location.reload(); }}
+          onCancel={() => setOpenConfirmCancel(false)}
+        />
       </Box>
     </Box>
   );
