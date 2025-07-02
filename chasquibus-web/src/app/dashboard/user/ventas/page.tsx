@@ -6,6 +6,8 @@ import { getHojasTrabajoCooperativa, HojaTrabajoDetallada } from '@/services/hoj
 import axios from "axios";
 import { getAllBoletos, Boleto } from '@/services/boletos';
 import jsPDF from 'jspdf';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 export default function VentasPage() {
   const [ventas, setVentas] = useState<any[]>([]);
@@ -18,6 +20,7 @@ export default function VentasPage() {
   const [openBoletoModal, setOpenBoletoModal] = useState(false);
   const [boletosModal, setBoletosModal] = useState<Boleto[]>([]);
   const [boletoIndex, setBoletoIndex] = useState(0);
+  const [openSuccess, setOpenSuccess] = useState(false);
 
   // Función para obtener el nombre de la hoja de trabajo por ID
   const getNombreHojaTrabajo = (hojaTrabajoId: number) => {
@@ -136,8 +139,14 @@ export default function VentasPage() {
       </Box>
       {/* Modal de venta presencial */}
       <Dialog open={openVentaModal} onClose={() => setOpenVentaModal(false)} maxWidth="md" fullWidth>
-        <VentaPresencialModal onVentaExitosa={() => { fetchData(); setOpenVentaModal(false); mostrarModalBoletoUltimaVenta(); }} />
+        <VentaPresencialModal onVentaExitosa={() => { fetchData(); setOpenVentaModal(false); mostrarModalBoletoUltimaVenta(); setOpenSuccess(true); }} />
       </Dialog>
+      {/* Snackbar de éxito */}
+      <Snackbar open={openSuccess} autoHideDuration={3000} onClose={() => setOpenSuccess(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <MuiAlert onClose={() => setOpenSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          ¡Venta registrada exitosamente!
+        </MuiAlert>
+      </Snackbar>
       {/* Tabla de ventas presenciales */}
       <Box sx={{ maxWidth: 1000, mx: "auto", my: 4 }}>
         <Typography variant="h6" sx={{ mb: 2, color: '#000' }}>Historial de Ventas Presenciales</Typography>

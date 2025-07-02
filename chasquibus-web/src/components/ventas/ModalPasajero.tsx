@@ -2,6 +2,7 @@ import React from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem, Box, Typography } from "@mui/material";
 import { TarifaParada } from '@/services/tarifasParadas';
 import { Descuento } from '@/services/descuentos';
+import { validarCedulaEcuador } from '@/lib/utils/validations';
 
 interface ModalPasajeroProps {
   open: boolean;
@@ -29,6 +30,11 @@ const ModalPasajero: React.FC<ModalPasajeroProps> = ({ open, onClose, onSave, va
   const totalDesc = porcentajeDesc ? (valorTarifa * porcentajeDesc) : 0;
   const totalFinal = valorTarifa - totalDesc;
 
+  // Validaciones para los campos
+  const soloLetras = (valor: string) => valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').replace(/^\s+|\s+$/g, '');
+  const soloNumeros = (valor: string) => valor.replace(/[^0-9]/g, '').slice(0, 10);
+  const cedulaValida = form.cedula ? validarCedulaEcuador(form.cedula) : true;
+
   const handleSave = () => {
     onSave({
       ...form,
@@ -47,20 +53,25 @@ const ModalPasajero: React.FC<ModalPasajeroProps> = ({ open, onClose, onSave, va
         <TextField
           label="Nombre"
           value={form.nombre || ''}
-          onChange={e => setForm({ ...form, nombre: e.target.value })}
+          onChange={e => setForm({ ...form, nombre: soloLetras(e.target.value) })}
           fullWidth sx={{ mt: 3, mb: 2 }}
+          inputProps={{ maxLength: 30 }}
         />
         <TextField
           label="Apellido"
           value={form.apellido || ''}
-          onChange={e => setForm({ ...form, apellido: e.target.value })}
+          onChange={e => setForm({ ...form, apellido: soloLetras(e.target.value) })}
           fullWidth sx={{ mb: 2 }}
+          inputProps={{ maxLength: 30 }}
         />
         <TextField
           label="Cédula"
           value={form.cedula || ''}
-          onChange={e => setForm({ ...form, cedula: e.target.value })}
+          onChange={e => setForm({ ...form, cedula: soloNumeros(e.target.value) })}
           fullWidth sx={{ mb: 2 }}
+          inputProps={{ maxLength: 10 }}
+          error={!!form.cedula && !cedulaValida}
+          helperText={!!form.cedula && !cedulaValida ? 'Cédula no válida' : ''}
         />
         <TextField
           select
@@ -76,9 +87,16 @@ const ModalPasajero: React.FC<ModalPasajeroProps> = ({ open, onClose, onSave, va
         <TextField
           select
           label="Descuento"
-          value={form.descuentoId || ''}
+          value={form.descuentoId === undefined || form.descuentoId === null ? '' : form.descuentoId}
           onChange={e => setForm({ ...form, descuentoId: e.target.value })}
           fullWidth sx={{ mb: 2 }}
+          SelectProps={{
+            renderValue: (selected) => {
+              if (!selected) return 'Sin descuento';
+              const d = descuentos.find(d => String(d.id) === String(selected));
+              return d ? `${d.tipoDescuento} - ${(Number(d.porcentaje) * 100).toFixed(0)}%` : 'Sin descuento';
+            }
+          }}
         >
           <MenuItem value="">Sin descuento</MenuItem>
           {descuentos.map(d => (
