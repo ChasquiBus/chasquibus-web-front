@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { getAllBoletos, Boleto } from '@/services/boletos';
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Chip } from '@mui/material';
 import jsQR from 'jsqr';
 
 export default function BoletosPage() {
@@ -68,8 +68,17 @@ export default function BoletosPage() {
     ? boletos
     : boletos.filter(b => b.cedula && b.cedula.includes(filtroCedula.trim()));
 
+  // Función para formatear fecha
+  const formatearFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
   return (
-    <Box sx={{ p: { xs: 1, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
+    <Box sx={{ p: { xs: 1, md: 3 }, maxWidth: 1400, mx: 'auto' }}>
       <Typography variant="h5" fontWeight={700} sx={{ color: '#000', mb: 2 }}>Boletos</Typography>
       <TextField
         label="Filtrar por cédula"
@@ -95,9 +104,11 @@ export default function BoletosPage() {
                 <TableCell sx={{ color: '#000', fontWeight: 700 }}>Cédula</TableCell>
                 <TableCell sx={{ color: '#000', fontWeight: 700 }}>Nombre</TableCell>
                 <TableCell sx={{ color: '#000', fontWeight: 700 }}>Apellido</TableCell>
-                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Total sin descuento</TableCell>
-                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Descuento</TableCell>
-                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Total a pagar</TableCell>
+                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Fecha Salida</TableCell>
+                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Bus</TableCell>
+                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Tipo Asiento</TableCell>
+                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Tipo Venta</TableCell>
+                <TableCell sx={{ color: '#000', fontWeight: 700 }}>Total</TableCell>
                 <TableCell sx={{ color: '#000', fontWeight: 700 }}>QR</TableCell>
               </TableRow>
             </TableHead>
@@ -109,8 +120,33 @@ export default function BoletosPage() {
                   <TableCell>{boleto.cedula}</TableCell>
                   <TableCell>{boleto.nombre}</TableCell>
                   <TableCell>{boleto.apellido}</TableCell>
-                  <TableCell>${boleto.totalSinDescPorPers}</TableCell>
-                  <TableCell>${boleto.totalDescPorPers}</TableCell>
+                  <TableCell>{formatearFecha(boleto.fechaSalida)}</TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {boleto.numeroBus}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#666' }}>
+                        {boleto.placaBus}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={boleto.tipoAsiento} 
+                      size="small"
+                      color={boleto.tipoAsiento === 'VIP' ? 'primary' : 'default'}
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={boleto.tipoVenta} 
+                      size="small"
+                      color={boleto.tipoVenta === 'presencial' ? 'success' : 'warning'}
+                      variant="outlined"
+                    />
+                  </TableCell>
                   <TableCell>${boleto.totalPorPer}</TableCell>
                   <TableCell>
                     {boleto.codigoQr && (
@@ -149,6 +185,10 @@ export default function BoletosPage() {
                   <div><b>Nombre:</b> {boletoQr.nombre} {boletoQr.apellido}</div>
                   <div><b>Cédula:</b> {boletoQr.cedula}</div>
                   <div><b>Asiento:</b> {boletoQr.asientoNumero}</div>
+                  <div><b>Fecha Salida:</b> {formatearFecha(boletoQr.fechaSalida)}</div>
+                  <div><b>Bus:</b> {boletoQr.numeroBus} - {boletoQr.placaBus}</div>
+                  <div><b>Tipo Asiento:</b> {boletoQr.tipoAsiento}</div>
+                  <div><b>Total:</b> ${boletoQr.totalPorPer}</div>
                 </div>
               );
             }

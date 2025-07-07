@@ -15,6 +15,16 @@ export interface Boleto {
   totalSinDescPorPers: string;
   totalDescPorPers: string;
   totalPorPer: string;
+  // Nuevos campos
+  valorTarifa: string;
+  tipoAsiento: string;
+  tipoVenta: string;
+  hojaTrabajoId: number;
+  busId: number;
+  estadoHojaTrabajo: string;
+  fechaSalida: string;
+  numeroBus: string;
+  placaBus: string;
 }
 
 function getToken() {
@@ -29,5 +39,5 @@ export async function getAllBoletos(): Promise<Boleto[]> {
       'Content-Type': 'application/json',
     },
   });
-  return res.data;
+  return res.data as Boleto[];
 } 
