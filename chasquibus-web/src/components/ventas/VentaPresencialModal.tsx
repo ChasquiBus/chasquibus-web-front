@@ -12,6 +12,12 @@ import { getAllDescuentos, Descuento } from '@/services/descuentos';
 import { createVentaPresencial } from '@/services/ventas';
 import ModalPasajero from './ModalPasajero';
 import ConfirmDialog from '../resoluciones/ConfirmDialog';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 const steps = [
   "Selecciona Ruta",
@@ -63,6 +69,9 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
   const [idConfigAsientos, setIdConfigAsientos] = useState<number | null>(null);
   // Guardar la configuración original para actualizarla tras la venta
   const [configAsientosOriginal, setConfigAsientosOriginal] = useState<PosicionAsiento[]>([]);
+  const [boletosVenta, setBoletosVenta] = useState<any[]>([]);
+  const [openBoletoModal, setOpenBoletoModal] = useState(false);
+  const [boletoIndex, setBoletoIndex] = useState(0);
 
   // Declarar formulariosCompletos aquí para que esté disponible
   const formulariosCompletos =
@@ -217,6 +226,23 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
       setLoadingVenta(false);
     }
   }
+
+  useEffect(() => {
+    if (ventaExitosa) {
+      // Buscar los boletos de la última venta en localStorage
+      const ultimaVentaId = localStorage.getItem('ultima_venta_id');
+      if (ultimaVentaId) {
+        import('@/services/boletos').then(({ getAllBoletos }) => {
+          getAllBoletos().then(boletosData => {
+            const boletos = boletosData.filter((b: any) => String(b.ventaId) === ultimaVentaId);
+            setBoletosVenta(boletos);
+            setBoletoIndex(0);
+            setOpenBoletoModal(true);
+          });
+        });
+      }
+    }
+  }, [ventaExitosa]);
 
   return (
     <Box sx={{ p: 3, minHeight: 500 }}>
@@ -375,6 +401,40 @@ const VentaPresencialModal: React.FC<VentaPresencialModalProps> = ({ onVentaExit
           onCancel={() => setOpenConfirmCancel(false)}
         />
       </Box>
+      {/* MODAL QR DE BOLETOS GENERADOS */}
+      <Dialog open={openBoletoModal} onClose={() => setOpenBoletoModal(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>QR del Boleto</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 3 }}>
+          {boletosVenta.length > 0 && boletosVenta[boletoIndex]?.codigoQr && (
+            <img src={boletosVenta[boletoIndex].codigoQr} alt="QR Boleto" style={{ width: 200, height: 200, marginBottom: 16 }} />
+          )}
+          {boletosVenta.length > 0 && (() => {
+            const boleto = boletosVenta[boletoIndex];
+            return (
+              <div style={{ textAlign: 'center' }}>
+                <div><b>ID:</b> {boleto.id}</div>
+                <div><b>Nombre:</b> {boleto.nombre} {boleto.apellido}</div>
+                <div><b>Cédula:</b> {boleto.cedula}</div>
+                <div><b>Asiento:</b> {boleto.asientoNumero}</div>
+                <div><b>Fecha Salida:</b> {new Date(boleto.fechaSalida).toLocaleDateString('es-EC')}</div>
+                <div><b>Bus:</b> {boleto.numeroBus} - {boleto.placaBus}</div>
+                <div><b>Tipo Asiento:</b> {boleto.tipoAsiento}</div>
+                <div><b>Total:</b> ${boleto.totalPorPer}</div>
+              </div>
+            );
+          })()}
+          {boletosVenta.length > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2, gap: 2 }}>
+              <Button onClick={() => setBoletoIndex(i => Math.max(0, i - 1))} disabled={boletoIndex === 0}>Anterior</Button>
+              <Typography variant="body2">Boleto {boletoIndex + 1} de {boletosVenta.length}</Typography>
+              <Button onClick={() => setBoletoIndex(i => Math.min(boletosVenta.length - 1, i + 1))} disabled={boletoIndex === boletosVenta.length - 1}>Siguiente</Button>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenBoletoModal(false)} color="primary">Cerrar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

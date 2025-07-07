@@ -198,6 +198,10 @@ export default function VentasPage() {
                   <div><b>Usado:</b> {qrContent.usado ? 'Sí' : 'No'}</div>
                   <div><b>Cooperativa:</b> {qrContent.cooperativa}</div>
                   <div><b>Aplica Descuento:</b> {qrContent.aplicoDescuento ? 'Sí' : 'No'}</div>
+                  <div><b>Fecha Salida:</b> {new Date(boleto.fechaSalida).toLocaleDateString('es-EC')}</div>
+                  <div><b>Bus:</b> {boleto.numeroBus} - {boleto.placaBus}</div>
+                  <div><b>Tipo Asiento:</b> {boleto.tipoAsiento}</div>
+                  <div><b>Total:</b> ${boleto.totalPorPer}</div>
                 </div>
               );
             } else {
@@ -207,6 +211,10 @@ export default function VentasPage() {
                   <div><b>Nombre:</b> {boleto.nombre} {boleto.apellido}</div>
                   <div><b>Cédula:</b> {boleto.cedula}</div>
                   <div><b>Asiento:</b> {boleto.asientoNumero}</div>
+                  <div><b>Fecha Salida:</b> {new Date(boleto.fechaSalida).toLocaleDateString('es-EC')}</div>
+                  <div><b>Bus:</b> {boleto.numeroBus} - {boleto.placaBus}</div>
+                  <div><b>Tipo Asiento:</b> {boleto.tipoAsiento}</div>
+                  <div><b>Total:</b> ${boleto.totalPorPer}</div>
                 </div>
               );
             }
