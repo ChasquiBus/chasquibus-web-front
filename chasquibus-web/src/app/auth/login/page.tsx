@@ -189,12 +189,7 @@ export default function LoginPage() {
                   Iniciar sesión
                 </Button>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1, gap: 2 }}>
-                  <Link href="#" style={{ fontSize: "0.95rem", color: "#1976d2", textDecoration: "none" }}>
-                    ¿Olvidaste tu contraseña?
-                  </Link>
-                  <Link href="/auth/register" style={{ fontSize: "0.95rem", color: "#1976d2", textDecoration: "none" }}>
-                    ¿No tienes cuenta? Regístrate ahora
-                  </Link>
+                  {/* Enlaces eliminados según solicitud */}
                 </Box>
               </Form>
             )}
