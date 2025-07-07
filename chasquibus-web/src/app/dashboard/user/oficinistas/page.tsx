@@ -39,7 +39,7 @@ export default function OficinistasPage() {
     setLoading(true);
     setError(null);
     try {
-      const data: Oficinista[] = await oficinistasService.getAllOficinistas(token);
+      const data: Oficinista[] = await oficinistasService.getAllOficinistas();
       setOficinistas(data as Oficinista[]);
     } catch (err) {
       setError('Error al cargar los oficinistas.');
@@ -61,7 +61,7 @@ export default function OficinistasPage() {
     setLoading(true);
     setError(null);
     try {
-      await oficinistasService.createOficinista(values, token);
+      await oficinistasService.createOficinista(values);
       fetchOficinistas();
       setIsFormModalOpen(false);
       setSnackbarMessage('Oficinista creado exitosamente.');
@@ -86,7 +86,7 @@ export default function OficinistasPage() {
     setLoading(true);
     setError(null);
     try {
-      await oficinistasService.updateOficinista(selectedOficinista.id, values, token);
+      await oficinistasService.updateOficinista(selectedOficinista.id, values);
       fetchOficinistas();
       setIsFormModalOpen(false);
       setSelectedOficinista(null);
@@ -112,7 +112,7 @@ export default function OficinistasPage() {
     setLoading(true);
     setError(null);
     try {
-      await oficinistasService.deleteOficinista(oficinistaToDeleteId, token);
+      await oficinistasService.deleteOficinista(oficinistaToDeleteId);
       fetchOficinistas();
       setIsConfirmModalOpen(false);
       setOficinistaToDeleteId(null);

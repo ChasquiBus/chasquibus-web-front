@@ -25,4 +25,6 @@ export interface CreateBusDto {
   activo?: boolean;
 }
 
-export interface UpdateBusDto extends Partial<CreateBusDto> {} 
+export interface UpdateBusDto extends Partial<CreateBusDto> {
+  id?: number;
+} 

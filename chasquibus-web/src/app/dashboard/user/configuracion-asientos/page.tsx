@@ -156,7 +156,7 @@ export default function ConfiguracionAsientosPage() {
     const filas = Math.ceil(numSeats / asientosPorFila);
     let numeroAsiento = 1;
     for (let fila = 1; fila <= filas; fila++) {
-      for (let col of [1, 2, 4, 5]) { // columna 3 es pasillo
+      for (const col of [1, 2, 4, 5]) { // columna 3 es pasillo
         if (numeroAsiento > numSeats) break;
         posiciones.push({
           fila,
@@ -206,7 +206,7 @@ export default function ConfiguracionAsientosPage() {
               }
               // Piso 2 usa plantilla especial
               const piso2 = generateSeatsPiso2DosPisos(selectedBus.total_asientos_piso2 || 0);
-              let nextNum = piso1.length > 0 ? Math.max(...piso1.map(p => p.numeroAsiento)) + 1 : 1;
+              const nextNum = piso1.length > 0 ? Math.max(...piso1.map(p => p.numeroAsiento)) + 1 : 1;
               const piso2Renumerado = piso2.map((a, idx) => ({ ...a, numeroAsiento: nextNum + idx }));
               generatedPosiciones = [...piso1, ...piso2Renumerado];
             }
@@ -249,7 +249,7 @@ export default function ConfiguracionAsientosPage() {
         }
         // Piso 2 usa plantilla especial
         const piso2 = generateSeatsPiso2DosPisos(selectedBus.total_asientos_piso2 || 0);
-        let nextNum = piso1.length > 0 ? Math.max(...piso1.map(p => p.numeroAsiento)) + 1 : 1;
+        const nextNum = piso1.length > 0 ? Math.max(...piso1.map(p => p.numeroAsiento)) + 1 : 1;
         const piso2Renumerado = piso2.map((a, idx) => ({ ...a, numeroAsiento: nextNum + idx }));
         generatedPosiciones = [...piso1, ...piso2Renumerado];
       }

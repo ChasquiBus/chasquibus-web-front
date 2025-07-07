@@ -24,7 +24,7 @@ import Grid from '@mui/material/Grid';
 interface CooperativaFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: CreateCooperativaDto) => Promise<void>;
+  onSubmit: (values: CreateCooperativaDto & { logo?: File }) => Promise<void>;
   initialValues?: CreateCooperativaDto;
   title: string;
 }

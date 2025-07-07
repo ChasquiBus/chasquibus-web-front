@@ -1,21 +1,4 @@
 import { UserRole } from '../types/auth';
-import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
-import GroupIcon from '@mui/icons-material/Group';
-import LocationCityIcon from '@mui/icons-material/LocationCity';
-import RoomIcon from '@mui/icons-material/Room';
-import AltRouteIcon from '@mui/icons-material/AltRoute';
-import GavelIcon from '@mui/icons-material/Gavel';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import WorkIcon from '@mui/icons-material/Work';
-import LogoutIcon from '@mui/icons-material/Logout';
-import AirlineSeatLegroomNormalIcon from '@mui/icons-material/AirlineSeatLegroomNormal';
-import SettingsIcon from '@mui/icons-material/Settings';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import PercentIcon from '@mui/icons-material/Percent';
 
 export interface NavigationItem {
   label: string;

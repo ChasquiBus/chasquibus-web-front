@@ -37,9 +37,14 @@ export default function VentasPage() {
     axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/ventas/cooperativa/tipo/presencial`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then((res: any) => setVentas(res.data))
-      .catch((err: any) => setErrorVentas(err?.message || 'Error al cargar ventas'))
-      .finally(() => setLoadingVentas(false));
+      .then((res: any) => {
+        setVentas(res.data);
+        setLoadingVentas(false);
+      })
+      .catch((err: any) => {
+        setErrorVentas(err?.message || 'Error al cargar ventas');
+        setLoadingVentas(false);
+      });
 
     // Cargar hojas de trabajo
     setLoadingHojas(true);

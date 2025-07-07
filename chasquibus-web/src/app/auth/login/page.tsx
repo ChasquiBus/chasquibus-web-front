@@ -1,14 +1,11 @@
 "use client";
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Link from "next/link";
 import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import EmailIcon from "@mui/icons-material/Email";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import Typography from "@mui/material/Typography";
@@ -19,6 +16,7 @@ import Alert from "@mui/material/Alert";
 import { useAuth } from "@/hooks/useAuth";
 import { User } from "@/types/auth";
 import InputAdornment from "@mui/material/InputAdornment";
+import Image from "next/image";
 
 interface LoginResult {
   success: boolean;
@@ -87,7 +85,7 @@ export default function LoginPage() {
           p: 0,
         }}
       >
-        <img src="/images/logochaqui.jpg" alt="Logo ChasquiBus" style={{ width: 200, height: 200, borderRadius: 15, objectFit: 'cover', boxShadow: '0 2px 24px #0003', marginBottom: 32 }} />
+        <Image src="/images/logochaqui.jpg" alt="Logo ChasquiBus" width={200} height={200} style={{ borderRadius: 15, objectFit: 'cover', boxShadow: '0 2px 24px #0003', marginBottom: 32 }} />
         <Typography variant="h3" fontWeight={800} sx={{ mb: 2, letterSpacing: 1, fontFamily: 'Segoe UI, Arial, sans-serif' }}>
           ¡Bienvenido a ChasquiBus!
         </Typography>

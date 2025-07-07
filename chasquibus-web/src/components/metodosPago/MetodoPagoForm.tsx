@@ -57,7 +57,8 @@ const MetodoPagoForm: React.FC<MetodoPagoFormProps> = ({
   }, [initialValues, open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
@@ -76,7 +77,7 @@ const MetodoPagoForm: React.FC<MetodoPagoFormProps> = ({
       return;
     }
     // configuracion es string, puede ser JSON como texto
-    let configuracionVal = form.configuracion;
+    const configuracionVal = form.configuracion;
     if (configuracionVal) {
       try {
         JSON.parse(configuracionVal);

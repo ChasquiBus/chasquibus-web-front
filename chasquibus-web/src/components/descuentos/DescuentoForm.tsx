@@ -40,7 +40,7 @@ export default function DescuentoForm({ initialValues, onSubmit, onCancel, loadi
     if (!form.tipoDescuento || form.porcentaje === '' || !form.estado) return;
     const data = {
       ...form,
-      porcentaje: Number(form.porcentaje),
+      porcentaje: String(form.porcentaje),
     };
     onSubmit(data as CreateDescuentoDto | UpdateDescuentoDto);
   };

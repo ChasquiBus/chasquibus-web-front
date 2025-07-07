@@ -1,4 +1,4 @@
-import { User } from './auth';
+
 
 interface ChoferUsuario {
   id: number;

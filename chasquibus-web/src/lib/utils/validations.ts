@@ -59,7 +59,7 @@ export function validarPlacaEcuador(placa: string): boolean {
 // Formatear la placa en tiempo real
 export function formatearPlacaEcuador(input: string): string {
   // Eliminar todo lo que no sea letra o número
-  let limpio = input.replace(/[^A-Za-z0-9]/g, '');
+  const limpio = input.replace(/[^A-Za-z0-9]/g, '');
   // Solo permitir letras en las primeras 3 posiciones, convertir a mayúsculas
   let letras = limpio.slice(0, 3).replace(/[^A-Za-z]/g, '').toUpperCase();
   // Solo permitir números en las siguientes 4 posiciones

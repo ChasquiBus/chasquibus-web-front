@@ -35,11 +35,10 @@ const ParadasPage: React.FC = () => {
   };
 
   const cargarParadas = async () => {
-    if (!cooperativaId) return;
     setLoading(true);
     try {
       const data = await getParadas();
-      setParadas(data.filter((p) => p.cooperativaId === cooperativaId));
+      setParadas(data);
     } catch (e) {
       mostrarMensaje('Error al cargar paradas', 'error');
     } finally {
@@ -59,8 +58,7 @@ const ParadasPage: React.FC = () => {
   useEffect(() => {
     cargarParadas();
     cargarCiudades();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cooperativaId]);
+  }, []);
 
   const handleAgregarParada = async (data: { nombreParada: string; ciudadId: number; direccion?: string; esTerminal: boolean }) => {
     // Validar duplicados por ciudad, nombre y dirección
@@ -134,9 +132,7 @@ const ParadasPage: React.FC = () => {
     }
   };
 
-  if (!cooperativaId) {
-    return <div style={{ padding: 32, color: 'red' }}>No tienes una cooperativa asignada.</div>;
-  }
+
 
   return (
     <Box sx={{ padding: 4 }}>

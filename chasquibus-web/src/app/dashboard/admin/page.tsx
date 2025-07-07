@@ -7,11 +7,6 @@ import {
   CardContent,
   Typography,
   Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Paper,
   Table,
   TableBody,
@@ -20,25 +15,15 @@ import {
   TableHead,
   TableRow,
   Chip,
-  IconButton,
-  InputAdornment,
   SelectChangeEvent,
 } from '@mui/material';
 import {
-  Search as SearchIcon,
   People as PeopleIcon,
   Business as BusinessIcon,
   AdminPanelSettings as AdminIcon,
-  Person as PersonIcon,
 } from '@mui/icons-material';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -122,12 +107,7 @@ export default function AdminDashboard() {
     return matchesSearch && matchesEstado;
   });
 
-  const handleFilterChange = (field: string) => (event: SelectChangeEvent | React.ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
-  };
+
 
   if (loading) {
     return (
@@ -248,9 +228,7 @@ export default function AdminDashboard() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredAdmins.map((admin) => {
-                const cooperativa = data.cooperativas.find(c => c.id === admin.cooperativaTransporteId);
-                return (
+              {filteredAdmins.map((admin) => (
                   <TableRow key={`admin-${admin.id}`}>
                     <TableCell>{`${admin.usuario.nombre} ${admin.usuario.apellido}`}</TableCell>
                     <TableCell>{admin.usuario.email}</TableCell>
@@ -264,8 +242,7 @@ export default function AdminDashboard() {
                     </TableCell>
                     <TableCell>{new Date(admin.usuario.createdAt).toLocaleDateString()}</TableCell>
                   </TableRow>
-                );
-              })}
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

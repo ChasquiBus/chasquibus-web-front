@@ -168,7 +168,14 @@ export default function TarifasPage() {
       <TarifasTable tarifas={tarifasFiltradas} paradas={paradas} onEdit={handleEditar} onDelete={handleEliminar} />
       <TarifaForm
         open={modalOpen}
-        rutas={rutas.map(r => ({ id: r.id, origenId: r.paradaOrigenId, destinoId: r.paradaDestinoId }))}
+        rutas={rutas.map(r => {
+          const origen = paradas.find(p => p.id === r.paradaOrigenId)?.nombreParada || '';
+          const destino = paradas.find(p => p.id === r.paradaDestinoId)?.nombreParada || '';
+          return {
+            id: r.id,
+            nombre: `${origen} → ${destino}`
+          };
+        })}
         paradas={paradas}
         initialValues={editTarifa || undefined}
         onSave={handleGuardar}

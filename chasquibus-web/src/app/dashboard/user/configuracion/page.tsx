@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Box, Typography, Button, TextField, Stack, CircularProgress, Snackbar, Alert, InputLabel, InputAdornment, IconButton, Grid } from "@mui/material";
+import { Box, Typography, Button, TextField, Stack, CircularProgress, Snackbar, Alert, InputLabel, InputAdornment, IconButton } from "@mui/material";
 import { cooperativesService } from '@/services/cooperatives';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
@@ -134,9 +134,9 @@ export default function ConfiguracionUsuario() {
       <Box maxWidth={800} width="100%" mx="auto" my={4}>
         <Typography variant="h5" color="black" fontWeight={700} mb={3} align="center">Configuración de Cooperativa</Typography>
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={4} alignItems="flex-start" justifyContent="center">
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: 'flex-start', justifyContent: 'center' }}>
             {/* Columna 1: Colores y Logo */}
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: { xs: '1', md: '0 0 50%' } }}>
               <Stack spacing={3}>
                 <Box>
                   <InputLabel sx={{ mb: 1, color: 'black' }}>Color Primario</InputLabel>
@@ -171,9 +171,9 @@ export default function ConfiguracionUsuario() {
                   )}
                 </Box>
               </Stack>
-            </Grid>
+            </Box>
             {/* Columna 2: Redes Sociales y Guardar */}
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: { xs: '1', md: '0 0 50%' } }}>
               <Stack spacing={3}>
                 <Box>
                   <InputLabel sx={{ mb: 1, color: 'black' }}>Redes Sociales</InputLabel>
@@ -240,8 +240,8 @@ export default function ConfiguracionUsuario() {
                   {loading ? <CircularProgress size={24} color="inherit" /> : 'Guardar Cambios'}
                 </Button>
               </Stack>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </form>
         <Snackbar open={!!success} autoHideDuration={4000} onClose={() => setSuccess(null)}>
           <Alert onClose={() => setSuccess(null)} severity="success" sx={{ width: '100%' }}>{success}</Alert>

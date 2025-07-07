@@ -10,6 +10,17 @@ export interface Descuento {
   estado: string;
 }
 
+export interface CreateDescuentoDto {
+  tipoDescuento: string;
+  requiereValidacion: boolean;
+  porcentaje: string;
+  estado: string;
+}
+
+export interface UpdateDescuentoDto extends Partial<CreateDescuentoDto> {
+  id?: number;
+}
+
 function getToken() {
   return localStorage.getItem('access_token');
 }

@@ -3,7 +3,7 @@ import { Bus, CreateBusDto, UpdateBusDto } from '@/types/bus';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-function appendFormDataWithTypes(formData: FormData, data: any) {
+function appendFormDataWithTypes(formData: FormData, data: Record<string, unknown>) {
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (key === 'cooperativa_id' || key === 'total_asientos') {
@@ -50,7 +50,7 @@ export const busesService = {
       formData.append('imagen', imagen);
     }
     // Mostrar en consola el FormData enviado
-    const debugData: any = {};
+    const debugData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
       debugData[key] = value;
     });
@@ -89,7 +89,7 @@ export const busesService = {
       formData.append('imagen', imagen);
     }
     // Mostrar en consola el FormData enviado
-    const debugData: any = {};
+    const debugData: Record<string, unknown> = {};
     formData.forEach((value, key) => {
       debugData[key] = value;
     });

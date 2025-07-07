@@ -24,7 +24,7 @@ export default function AdminCooperativesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openForm, setOpenForm] = useState(false);
-  const [selectedCooperativa, setSelectedCooperativa] = useState<CreateCooperativaDto | null>(null);
+  const [selectedCooperativa, setSelectedCooperativa] = useState<(CreateCooperativaDto & { logo?: File }) | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -54,7 +54,7 @@ export default function AdminCooperativesPage() {
     loadCooperativas();
   }, []);
 
-  const handleCreate = async (values: CreateCooperativaDto) => {
+  const handleCreate = async (values: CreateCooperativaDto & { logo?: File }) => {
     try {
       await cooperativesService.create(values);
       setSnackbar({
@@ -72,7 +72,7 @@ export default function AdminCooperativesPage() {
     }
   };
 
-  const handleEdit = async (values: CreateCooperativaDto) => {
+  const handleEdit = async (values: CreateCooperativaDto & { logo?: File }) => {
     if (editId === null) return;
     try {
       await cooperativesService.update(editId, values);
@@ -120,7 +120,6 @@ export default function AdminCooperativesPage() {
       setSelectedCooperativa({
         nombre: cooperativa.nombre,
         ruc: cooperativa.ruc,
-        logo: cooperativa.logo,
         colorPrimario: cooperativa.colorPrimario,
         colorSecundario: cooperativa.colorSecundario,
         sitioWeb: cooperativa.sitioWeb,

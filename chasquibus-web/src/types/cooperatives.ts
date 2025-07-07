@@ -35,4 +35,7 @@ export interface CreateCooperativaDto {
   tiktok?: string;
 }
 
-export interface UpdateCooperativaDto extends CreateCooperativaDto {} 
+export interface UpdateCooperativaDto extends Partial<CreateCooperativaDto> {
+  id?: number;
+  activo?: boolean;
+} 

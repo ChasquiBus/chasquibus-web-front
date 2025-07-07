@@ -128,10 +128,10 @@ export async function deleteHojaTrabajo(id: number): Promise<void> {
 // Listar hojas de trabajo de la cooperativa
 export async function getHojasTrabajoCooperativa(): Promise<HojaTrabajoDetallada[]> {
   const token = getToken();
-  const res = await axios.get(`${API_URL}/hoja-trabajo/cooperativa/mis-hojas`, {
+  const res = await axios.get<{ data: HojaTrabajoDetallada[] }>(`${API_URL}/hoja-trabajo/cooperativa/mis-hojas`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return res.data.data as HojaTrabajoDetallada[];
+  return res.data.data;
 }
 
 // Los siguientes métodos NO están permitidos para ADMIN/OFICINISTA y se comentan para evitar su uso:

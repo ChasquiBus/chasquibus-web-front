@@ -26,6 +26,7 @@ import { oficinistasService } from '@/services/oficinistas';
 import { choferesService } from '@/services/choferes';
 import axios from 'axios';
 import { getHojasTrabajoCooperativa, HojaTrabajoDetallada } from '@/services/hojaTrabajo';
+import { Chofer } from '@/types/chofer';
 
 export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
@@ -60,7 +61,7 @@ export default function UserDashboard() {
         const totalGanancia = ventasArr.reduce((acc, v) => acc + Number(v.totalFinal || 0), 0);
         setGanancia(totalGanancia);
         // Para choferes, si tienes cooperativaId, pásalo, si no, solo cuenta 0
-        let choferes = [];
+        let choferes: Chofer[] = [];
         try {
           choferes = await choferesService.getAllChoferes(1, token); // Cambia 1 por el cooperativaId real si lo tienes
         } catch {
@@ -83,7 +84,7 @@ export default function UserDashboard() {
   }, []);
 
   // Helper para obtener hoja de trabajo por id
-  const getHojaTrabajo = (id) => hojasTrabajo.find(h => h.id === id);
+  const getHojaTrabajo = (id: number) => hojasTrabajo.find(h => h.id === id);
 
   // 1. Últimas ventas realizadas (máximo 5)
   const ultimasVentas = [...ventas]
@@ -91,7 +92,7 @@ export default function UserDashboard() {
     .slice(0, 5);
 
   // 2. Buses más utilizados
-  const busVentasMap = {};
+  const busVentasMap: Record<string, any> = {};
   ventas.forEach(v => {
     const hoja = getHojaTrabajo(v.hojaTrabajoId);
     if (hoja) {
@@ -100,11 +101,11 @@ export default function UserDashboard() {
     }
   });
   const busesMasUtilizados = Object.values(busVentasMap)
-    .sort((a, b) => b.count - a.count)
+    .sort((a: any, b: any) => b.count - a.count)
     .slice(0, 5);
 
   // 3. Rutas más vendidas
-  const rutaVentasMap = {};
+  const rutaVentasMap: Record<string, any> = {};
   ventas.forEach(v => {
     const hoja = getHojaTrabajo(v.hojaTrabajoId);
     if (hoja) {
@@ -115,7 +116,7 @@ export default function UserDashboard() {
     }
   });
   const rutasMasVendidas = Object.values(rutaVentasMap)
-    .sort((a, b) => b.count - a.count)
+    .sort((a: any, b: any) => b.count - a.count)
     .slice(0, 5);
 
   return (
@@ -123,97 +124,87 @@ export default function UserDashboard() {
       <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: '#1976d2' }}>
         Dashboard Usuario
       </Typography>
-      <Grid container spacing={3} sx={{ mb: 4 }} alignItems="stretch">
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ bgcolor: '#e3f2fd', height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <DirectionsBusIcon sx={{ fontSize: 40, color: '#1976d2', mr: 2 }} />
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#1976d2' }}>
-                    {loading ? <CircularProgress size={32} /> : busesCount ?? '-'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Buses
-                  </Typography>
-                </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(5, 1fr)' }, gap: 3, mb: 4, alignItems: 'stretch' }}>
+        <Card sx={{ bgcolor: '#e3f2fd', height: '100%' }}>
+          <CardContent>
+            <Box display="flex" alignItems="center">
+              <DirectionsBusIcon sx={{ fontSize: 40, color: '#1976d2', mr: 2 }} />
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#1976d2' }}>
+                  {loading ? <CircularProgress size={32} /> : busesCount ?? '-'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Buses
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ bgcolor: '#e8f5e8', height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <PeopleIcon sx={{ fontSize: 40, color: '#2e7d32', mr: 2 }} />
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#2e7d32' }}>
-                    {loading ? <CircularProgress size={32} /> : oficinistasCount ?? '-'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Oficinistas
-                  </Typography>
-                </Box>
+            </Box>
+          </CardContent>
+        </Card>
+        <Card sx={{ bgcolor: '#e8f5e8', height: '100%' }}>
+          <CardContent>
+            <Box display="flex" alignItems="center">
+              <PeopleIcon sx={{ fontSize: 40, color: '#2e7d32', mr: 2 }} />
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#2e7d32' }}>
+                  {loading ? <CircularProgress size={32} /> : oficinistasCount ?? '-'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Oficinistas
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ bgcolor: '#fff3e0', height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <PersonIcon sx={{ fontSize: 40, color: '#f57c00', mr: 2 }} />
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#f57c00' }}>
-                    {loading ? <CircularProgress size={32} /> : choferesCount ?? '-'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Choferes
-                  </Typography>
-                </Box>
+            </Box>
+          </CardContent>
+        </Card>
+        <Card sx={{ bgcolor: '#fff3e0', height: '100%' }}>
+          <CardContent>
+            <Box display="flex" alignItems="center">
+              <PersonIcon sx={{ fontSize: 40, color: '#f57c00', mr: 2 }} />
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#f57c00' }}>
+                  {loading ? <CircularProgress size={32} /> : choferesCount ?? '-'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Choferes
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ bgcolor: '#ede7f6', height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <ReceiptLongIcon sx={{ fontSize: 40, color: '#7c4dff', mr: 2 }} />
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#7c4dff' }}>
-                    {loading ? <CircularProgress size={32} /> : ventasCount ?? '-'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Ventas realizadas
-                  </Typography>
-                </Box>
+            </Box>
+          </CardContent>
+        </Card>
+        <Card sx={{ bgcolor: '#ede7f6', height: '100%' }}>
+          <CardContent>
+            <Box display="flex" alignItems="center">
+              <ReceiptLongIcon sx={{ fontSize: 40, color: '#7c4dff', mr: 2 }} />
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#7c4dff' }}>
+                  {loading ? <CircularProgress size={32} /> : ventasCount ?? '-'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ventas realizadas
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ bgcolor: '#fffde7', height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <MonetizationOnIcon sx={{ fontSize: 40, color: '#fbc02d', mr: 2 }} />
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#fbc02d' }}>
-                    {loading ? <CircularProgress size={32} /> : ganancia !== null ? `$${ganancia.toFixed(2)}` : '-'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Ganancia total
-                  </Typography>
-                </Box>
+            </Box>
+          </CardContent>
+        </Card>
+        <Card sx={{ bgcolor: '#fffde7', height: '100%' }}>
+          <CardContent>
+            <Box display="flex" alignItems="center">
+              <MonetizationOnIcon sx={{ fontSize: 40, color: '#fbc02d', mr: 2 }} />
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#fbc02d' }}>
+                  {loading ? <CircularProgress size={32} /> : ganancia !== null ? `$${ganancia.toFixed(2)}` : '-'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ganancia total
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
       {/* Tablas informativas */}
       <Divider sx={{ my: 4 }} />
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6} lg={4}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+        <Box>
           <Typography variant="h6" sx={{ mb: 1, color: '#1976d2' }}>Últimas ventas realizadas</Typography>
           <TableContainer component={Paper}>
             <Table size="small">
@@ -242,8 +233,8 @@ export default function UserDashboard() {
               </TableBody>
             </Table>
           </TableContainer>
-        </Grid>
-        <Grid item xs={12} md={6} lg={4}>
+        </Box>
+        <Box>
           <Typography variant="h6" sx={{ mb: 1, color: '#1976d2' }}>Buses más utilizados</Typography>
           <TableContainer component={Paper}>
             <Table size="small">
@@ -265,8 +256,8 @@ export default function UserDashboard() {
               </TableBody>
             </Table>
           </TableContainer>
-        </Grid>
-        <Grid item xs={12} md={12} lg={4}>
+        </Box>
+        <Box sx={{ gridColumn: { xs: '1', md: '1 / -1', lg: '3' } }}>
           <Typography variant="h6" sx={{ mb: 1, color: '#1976d2' }}>Rutas más vendidas</Typography>
           <TableContainer component={Paper}>
             <Table size="small">
@@ -288,8 +279,8 @@ export default function UserDashboard() {
               </TableBody>
             </Table>
           </TableContainer>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   );
 } 

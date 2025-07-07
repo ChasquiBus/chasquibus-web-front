@@ -6,6 +6,7 @@ export interface PosicionAsiento {
   piso: number;
   tipoAsiento: 'NORMAL' | 'VIP';
   numeroAsiento: number;
+  ocupado?: boolean;
 }
 
 export interface ConfiguracionAsientos {
@@ -86,7 +87,7 @@ export const configuracionAsientosService = {
 
   async update(id: number, dto: UpdateConfiguracionAsientosDto): Promise<ConfiguracionAsientos> {
     // Filtrar solo los campos requeridos por el backend en cada posición
-    let bodyObj: any = {};
+    const bodyObj: any = {};
     if (dto.posiciones) {
       bodyObj.posiciones = dto.posiciones.map(p => ({
         fila: p.fila,

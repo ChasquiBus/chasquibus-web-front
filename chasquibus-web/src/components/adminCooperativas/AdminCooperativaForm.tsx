@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, TextField, MenuItem, Stack, Grid
+  Button, TextField, MenuItem, Stack, Grid, Box
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -70,15 +70,12 @@ export default function AdminCooperativaForm({
       cedula: initialValues?.cedula || '',
       telefono: initialValues?.telefono || '',
       activo: initialValues?.activo ?? true,
-      cooperativaTransporteId: initialValues?.cooperativaTransporteId || '',
+      cooperativaTransporteId: initialValues?.cooperativaTransporteId ? Number(initialValues.cooperativaTransporteId) : undefined,
     },
     enableReinitialize: true,
     validationSchema,
     onSubmit: async (values) => {
-      let data = { ...values };
-      if (typeof data.cooperativaTransporteId === 'string') {
-        data.cooperativaTransporteId = parseInt(data.cooperativaTransporteId, 10);
-      }
+      const data = { ...values, cooperativaTransporteId: Number(values.cooperativaTransporteId) };
       if (isEdit && !values.password) {
         const { password, ...rest } = data;
         await onSubmit(rest);
@@ -91,11 +88,11 @@ export default function AdminCooperativaForm({
 
   // Handlers para restringir la entrada en los campos
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
+    const value = e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
     formik.setFieldValue('nombre', value);
   };
   const handleApellidoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
+    const value = e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
     formik.setFieldValue('apellido', value);
   };
   const handleCedulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +112,7 @@ export default function AdminCooperativaForm({
       <form onSubmit={formik.handleSubmit}>
         <DialogContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
               <Stack spacing={2}>
                 <TextField
                   fullWidth
@@ -163,8 +160,8 @@ export default function AdminCooperativaForm({
                   helperText={formik.touched.apellido && formik.errors.apellido}
                 />
               </Stack>
-            </Grid>
-            <Grid item xs={12} md={6}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
               <Stack spacing={2}>
                 <TextField
                   fullWidth
@@ -208,7 +205,7 @@ export default function AdminCooperativaForm({
                   ))}
                 </TextField>
               </Stack>
-            </Grid>
+            </Box>
           </Grid>
         </DialogContent>
         <DialogActions>
